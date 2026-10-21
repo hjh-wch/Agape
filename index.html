@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>XXX筹款晚会 竞价</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
@@ -196,57 +200,69 @@ select{width:100%;font:inherit;font-size:1.05rem;padding:.7rem;margin-top:.35rem
 .idsum{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.7rem .9rem;margin-bottom:1rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
 .idsum span{min-width:0;overflow-wrap:anywhere}
 .idsum button{flex:none;border:2px solid var(--line);background:transparent;color:var(--paper);border-radius:8px;padding:.4rem .8rem;font:inherit;cursor:pointer}
+.qr svg{width:90%;height:auto;display:block}
+.nav{display:flex;gap:.6rem;flex-wrap:wrap;margin:.6rem 0}
+.nav a{display:inline-block;text-decoration:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
 <body>
 
 <!-- 预览工具条:只是为了现在看效果,正式版会删除(这些功能会放进管理页) -->
-<div class="dev">
-  <b>预览工具</b>
-  <a href="#/screen">大屏页</a>
-  <a href="#/bid">出价页</a>
-  <a href="#/admin">管理页</a>
-  <button id="sim">模拟别人出价</button>
-  <button id="reset">重置</button>
-</div>
 
 <div id="app"></div>
 
 <script>
-/* ===== 假数据:接上 Firebase 后会换成真数据 ===== */
-const CUR = 'RM ', TAIL = 3, MAXROUND = 10;      // 币种、大屏显示手机尾号位数、一轮最多件数
-const money = n => CUR + Number(n).toLocaleString('en-US');
-const makeItems = () => [
-  {id:'fu',  name:'「福」字木雕牌匾',   emoji:'福', c1:'#d8b27a', c2:'#b98a52', min:200, inc:20},
-  {id:'he',  name:'「家和万事兴」匾额', emoji:'和', c1:'#c9a068', c2:'#a77a47', min:300, inc:20},
-  {id:'carp',name:'鲤鱼戏莲木雕摆件',   emoji:'鲤', c1:'#deba84', c2:'#c0955c', min:150, inc:10},
-  {id:'guan',name:'观音木雕像',         emoji:'观', c1:'#cfa571', c2:'#b08350', min:250, inc:20},
-  {id:'long',name:'双龙戏珠木刻挂板',   emoji:'龙', c1:'#c59a63', c2:'#a5753f', min:200, inc:20},
-  {id:'mei', name:'梅兰竹菊木刻屏风',   emoji:'梅', c1:'#d6ae78', c2:'#b98d55', min:350, inc:30},
-  {id:'ma',  name:'马到成功木雕摆件',   emoji:'马', c1:'#d3ab72', c2:'#b58650', min:180, inc:20},
-  {id:'lian',name:'莲花木雕灯座',       emoji:'莲', c1:'#cda468', c2:'#ad7d48', min:120, inc:10},
-  {id:'shou',name:'「寿」字木雕寿匾',   emoji:'寿', c1:'#dab67e', c2:'#bb8f58', min:260, inc:20},
-  {id:'zhu', name:'竹节木刻笔筒',       emoji:'竹', c1:'#d0a96f', c2:'#b2824c', min:90,  inc:10},
-].map(i => ({...i, top:null, table:null, phone:null, photo:'', status:'pending'}));
+/* ============================================================
+   第 1 步:把 Firebase 控制台里的 firebaseConfig 粘贴到下面,
+   替换掉 { } 里面的内容(保留前后的 const firebaseConfig = 和分号)
+   ============================================================ */
+const firebaseConfig = {
+    apiKey: "AIzaSyBV1iHktFWtZW3wrYcDJ6zmt4YKSMC9kVc",
+    authDomain: "agape-mega.firebaseapp.com",
+    projectId: "agape-mega",
+    storageBucket: "agape-mega.firebasestorage.app",
+    messagingSenderId: "212589354348",
+    appId: "1:212589354348:web:e69ce9871018c2d317e749"
+};
 
-let items = makeItems();
-let round = null;                      // 当前一轮 {no, ids, status:'open'|'closed', endAt}
-let roundNo = 0, finished = false;
-let bids = [], bidSeq = 0;
+/* ===== 其他设置 ===== */
+const CUR = 'RM ', TAIL = 3, MAXROUND = 10;      // 币种、大屏显示手机尾号位数、一轮最多件数
+const configured = !/粘贴/.test(JSON.stringify(firebaseConfig));
+const money = n => CUR + Number(n).toLocaleString('en-US');
+const DEMO = [
+  {name:'「福」字木雕牌匾',   emoji:'福', c1:'#d8b27a', c2:'#b98a52', min:200, inc:20},
+  {name:'「家和万事兴」匾额', emoji:'和', c1:'#c9a068', c2:'#a77a47', min:300, inc:20},
+  {name:'鲤鱼戏莲木雕摆件',   emoji:'鲤', c1:'#deba84', c2:'#c0955c', min:150, inc:10},
+  {name:'观音木雕像',         emoji:'观', c1:'#cfa571', c2:'#b08350', min:250, inc:20},
+  {name:'双龙戏珠木刻挂板',   emoji:'龙', c1:'#c59a63', c2:'#a5753f', min:200, inc:20},
+  {name:'梅兰竹菊木刻屏风',   emoji:'梅', c1:'#d6ae78', c2:'#b98d55', min:350, inc:30},
+  {name:'马到成功木雕摆件',   emoji:'马', c1:'#d3ab72', c2:'#b58650', min:180, inc:20},
+  {name:'莲花木雕灯座',       emoji:'莲', c1:'#cda468', c2:'#ad7d48', min:120, inc:10},
+  {name:'「寿」字木雕寿匾',   emoji:'寿', c1:'#dab67e', c2:'#bb8f58', min:260, inc:20},
+  {name:'竹节木刻笔筒',       emoji:'竹', c1:'#d0a96f', c2:'#b2824c', min:90,  inc:10},
+];
+const BLANK = {status:'pending', top:null, table:null, tail:'', lastBid:null};
+const IDLE = {no:0, ids:[], status:'idle', finished:false, startedAt:null, durMs:0, extraMs:0};
+
+/* ===== 状态(全部来自数据库) ===== */
+let db, auth, user = null;
+let items = [], R = null, round = null, finished = false;
+let bids = [], adminErr = '';
+let unsubs = [], adminUnsub = null, ready = {items:false, round:false}, shown = false, closing = false;
 let last = {}, viewKey = '', sel = [], durMin = 2, tab = 'live';
 
 const $ = s => document.querySelector(s);
 const get = id => items.find(i => i.id === id);
-const roundItems = () => round ? round.ids.map(get) : [];
-const isClosed = it => it.status === 'closed';
+const roundItems = () => round ? round.ids.map(get).filter(Boolean) : [];
+const isClosed = it => it.status === 'closed' || (!!round && round.ids.includes(it.id) && round.status !== 'open');
 const nextMin = it => it.top == null ? it.min : it.top + it.inc;
 const pad = n => String(n).padStart(2,'0');
 const fmt = ms => { const s=Math.max(0,Math.floor(ms/1000)); const h=Math.floor(s/3600), m=Math.floor(s%3600/60); return (h?h+':':'')+pad(m)+':'+pad(s%60); };
 const bg = it => `background:linear-gradient(135deg,${it.c1},${it.c2})`;
-const face = it => it.photo ? `<img src="${it.photo}" alt="">` : it.emoji;
-const norm = p => String(p || '').replace(/\D/g, '');            // 手机号只留数字,用来认"同一个人"
-const tailOf = it => norm(it.phone).slice(-TAIL);
+const face = it => it.photo ? `<img src="${esc(it.photo)}" alt="">` : it.emoji;
+const norm = p => String(p || '').replace(/\D/g, '');
+const tailOf = it => it.tail || '';
 const leadHtml = it => it.top==null ? (isClosed(it)?'无人出价':'等待出价')
   : `${isClosed(it)?'得标':'领先'}<b>桌 ${it.table}</b>${tailOf(it)?`<small class="tl">尾号 ${tailOf(it)}</small>`:''}`;
 const leadShort = it => it.top==null ? (isClosed(it)?'无人出价':'等待出价')
@@ -255,58 +271,123 @@ const priceLabel = it => it.top==null ? '起拍价' : (isClosed(it)?'成交价':
 const key = () => `${round?round.no:0}:${round?round.status:''}:${finished}`;
 const saved = () => { try { return JSON.parse(localStorage.getItem('bidder')) || {}; } catch(e){ return {}; } };
 const save = (table, phone, name) => { try { localStorage.setItem('bidder', JSON.stringify({table, phone, name})); } catch(e){} };
-const me = () => norm(saved().phone);
-
-function recalc(it){                   // 从有效出价里重新算最高价(同价取先出价者)
-  const v = bids.filter(b => b.item === it.id && !b.void);
-  if (!v.length){ it.top = null; it.table = null; it.phone = null; it.bidder = null; return; }
-  const w = v.reduce((m,b) => b.amount > m.amount ? b : m);
-  it.top = w.amount; it.table = w.table; it.phone = w.phone; it.bidder = w.who;
-}
-function place(itemId, table, amt, phone, source, who){
-  const it = get(itemId);
-  if (!round || round.status !== 'open' || !it || !round.ids.includes(itemId)) return {ok:false, msg:'这一轮竞价已结束,无法出价。'};
-  if (amt < nextMin(it)){
-    return {ok:false, msg: it.top==null
-      ? `出价不能低于起拍价 ${money(it.min)}。`
-      : `刚刚有人出到 ${money(it.top)},你至少要出 ${money(nextMin(it))}。`};
-  }
-  bids.push({id:++bidSeq, item:it.id, table:Number(table), phone:phone||'', who:who||'', amount:amt, time:Date.now(), source:source||'guest', void:false});
-  recalc(it);
-  return {ok:true};
-}
-function startRound(ids){
-  if (round && round.status === 'open') return;
-  ids = ids.filter(id => get(id) && get(id).status === 'pending').slice(0, MAXROUND);
-  if (!ids.length) return;
-  ids.forEach(id => get(id).status = 'open');
-  round = {no: ++roundNo, ids, status:'open', endAt: durMin > 0 ? Date.now() + durMin*60000 : null};
-  sel = [];
-}
-function closeRound(){ if (round && round.status === 'open'){ round.status = 'closed'; roundItems().forEach(i => i.status = 'closed'); } }
-function reopenRound(){ if (round && round.status === 'closed'){ roundItems().forEach(i => i.status = 'open'); round.status = 'open'; round.endAt = durMin > 0 ? Date.now() + durMin*60000 : null; } }
+const myBids = () => { try { return JSON.parse(localStorage.getItem('mybids')) || {}; } catch(e){ return {}; } };
+const remember = (itemId, bidId) => { try { const m = myBids(); (m[itemId] = m[itemId] || []).push(bidId); localStorage.setItem('mybids', JSON.stringify(m)); } catch(e){} };
 const total = () => items.reduce((a,i) => a + (isClosed(i) && i.top ? i.top : 0), 0);
+const esc = x => String(x ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ===== 数据库 ===== */
+const FV = () => firebase.firestore.FieldValue;
+const col = n => db.collection(n);
+const itemRef = id => col('items').doc(id);
+const roundRef = () => db.doc('state/round');
+
+function applyRound(d){
+  R = d;
+  if (!d || d.status === 'idle'){ round = null; finished = !!(d && d.finished); return; }
+  const st = d.startedAt && d.startedAt.toMillis ? d.startedAt.toMillis() : Date.now();
+  const endAt = d.durMs > 0 ? st + d.durMs + (d.extraMs || 0) : null;
+  round = {no:d.no, ids:d.ids || [], dbStatus:d.status, status:d.status, endAt};
+  if (round.status === 'open' && endAt && Date.now() >= endAt) round.status = 'closed';
+  finished = !!d.finished;
+}
+function startSync(){
+  if (unsubs.length) return;
+  unsubs.push(col('items').orderBy('order').onSnapshot(s => { items = s.docs.map(d => ({id:d.id, ...d.data()})); ready.items = true; enrich(); onData(); }, onErr));
+  unsubs.push(roundRef().onSnapshot(s => { applyRound(s.exists ? s.data({serverTimestamps:'estimate'}) : null); ready.round = true; onData(); }, onErr));
+}
+function stopSync(){ unsubs.forEach(u => u()); unsubs = []; }
+function onData(){ if (!(ready.items && ready.round)) return; if (!shown){ shown = true; return route(); } refresh(); }
+function onErr(e){ $('#app').innerHTML = `<div class="wrap wait"><h1>连不上数据库</h1><p>请检查网络,或确认安全规则已经发布。(${esc(e.code || e.message)})</p></div>`; }
+
+const pick = list => list.reduce((m,b) => !m || b.amount > m.amount ? b : m, null);   // 同价取先出价者
+function enrich(){ items.forEach(it => { const w = pick(bids.filter(b => b.item === it.id && !b.void)); it.phone = w ? w.phone : null; it.bidder = w ? w.who : null; }); }
+
+async function placeBid(itemId, table, amt, phone, source, who){
+  const ref = itemRef(itemId), bref = col('bids').doc();
+  try {
+    await db.runTransaction(async tx => {
+      const d = (await tx.get(ref)).data();
+      const need = d.top == null ? d.min : d.top + d.inc;
+      if (amt < need) throw {code:'low', need, top:d.top};
+      tx.set(bref, {item:itemId, table:Number(table), amount:amt, phone, who:who||'', source:source||'guest', void:false, createdAt:FV().serverTimestamp()});
+      tx.update(ref, {top:amt, table:Number(table), tail:norm(phone).slice(-TAIL), lastBid:bref.id});
+    });
+    return {ok:true, bidId:bref.id};
+  } catch(e){
+    if (e.code === 'low') return {ok:false, msg: e.top==null ? `出价不能低于起拍价 ${money(e.need)}。` : `刚刚有人出到 ${money(e.top)},你至少要出 ${money(e.need)}。`};
+    if (e.code === 'permission-denied') return {ok:false, msg:'出价没有成功:这一轮可能已经截止。请看看大屏幕或刷新页面。'};
+    return {ok:false, msg:'网络出了问题,出价没有成功,请再试一次。'};
+  }
+}
+async function startRound(ids){
+  ids = ids.filter(id => get(id) && get(id).status === 'pending').slice(0, MAXROUND);
+  if (!ids.length || (round && round.status === 'open')) return;
+  const b = db.batch();
+  ids.forEach(id => b.update(itemRef(id), {status:'open'}));
+  b.set(roundRef(), {no:(R && R.no || 0) + 1, ids, status:'open', startedAt:FV().serverTimestamp(), durMs: durMin > 0 ? Math.round(durMin*60000) : 0, extraMs:0, finished:false});
+  sel = []; await b.commit();
+}
+async function closeRound(){
+  if (!round || round.dbStatus !== 'open') return;
+  const b = db.batch();
+  round.ids.forEach(id => b.update(itemRef(id), {status:'closed'}));
+  b.update(roundRef(), {status:'closed'}); await b.commit();
+}
+async function reopenRound(){
+  if (!round || round.status === 'open') return;
+  const b = db.batch();
+  round.ids.forEach(id => b.update(itemRef(id), {status:'open'}));
+  b.update(roundRef(), {status:'open', startedAt:FV().serverTimestamp(), durMs: durMin > 0 ? Math.round(durMin*60000) : 0, extraMs:0}); await b.commit();
+}
+async function setVoid(id, v){
+  const x = bids.find(b => b.id === id); if (!x) return;
+  const w = pick(bids.filter(b => b.item === x.item).map(b => b.id === id ? {...b, void:v} : b).filter(b => !b.void));
+  const b = db.batch();
+  b.update(col('bids').doc(id), {void:v});
+  b.update(itemRef(x.item), w ? {top:w.amount, table:w.table, tail:norm(w.phone).slice(-TAIL), lastBid:w.id} : {top:null, table:null, tail:'', lastBid:null});
+  await b.commit();
+}
+async function seedDemo(){
+  const base = items.reduce((m,i) => Math.max(m, i.order || 0), 0), b = db.batch();
+  DEMO.forEach((d,i) => b.set(col('items').doc(), {...d, ...BLANK, photo:'', order:base+i+1}));
+  if (!R) b.set(roundRef(), IDLE);
+  await b.commit();
+}
+async function resetAll(){
+  if (!confirm('确定要清空所有出价,并把所有物品重置为"未开始"吗?这个操作不能撤销,只应该在演练之后使用。')) return;
+  for (let i = 0; i < bids.length; i += 400){ const b = db.batch(); bids.slice(i, i+400).forEach(x => b.delete(col('bids').doc(x.id))); await b.commit(); }
+  const b = db.batch(); items.forEach(it => b.update(itemRef(it.id), BLANK)); b.set(roundRef(), IDLE); await b.commit(); sel = [];
+}
 
 /* ===== 大屏页 ===== */
+let qrCache = '';
+function qrSvg(){
+  if (qrCache) return qrCache;
+  const url = location.href.split('#')[0].split('?')[0] + '#/bid';
+  try { const q = qrcode(0, 'M'); q.addData(url); q.make(); qrCache = q.createSvgTag(4, 8); }
+  catch(e){ qrCache = `<span style="font-size:.8rem;padding:.5rem;word-break:break-all">${esc(url)}</span>`; }
+  return qrCache;
+}
 const fl = it => last[it.id] !== undefined && last[it.id] !== it.top;
 const sealOf = it => isClosed(it) ? `<span class="seal">${it.top==null?'流拍':'成交'}</span>` : '';
 
-function single(it){                   // 一轮只有一件:大版面
+function single(it){
   return `<main class="stage"><section class="stitch ${fl(it)?'flash':''}">
     <div class="left">
       <div class="big ph" style="${bg(it)}">${face(it)}${sealOf(it)}</div>
-      <div><small>第 ${items.indexOf(it)+1} 件,共 ${items.length} 件</small><h2>${it.name}</h2>
+      <div><small>第 ${items.indexOf(it)+1} 件,共 ${items.length} 件</small><h2>${esc(it.name)}</h2>
         <p class="rule">起拍价 ${money(it.min)},每次至少加 ${money(it.inc)}</p></div>
     </div>
     <div class="right">
-      <div class="top2"><div class="qr"><div>二维码</div>扫码出价</div>
+      <div class="top2"><div class="qr"><div>${qrSvg()}</div>扫码出价</div>
         <div class="cd" id="cdBox"><span id="cdLbl"></span><b id="cd"></b></div></div>
       <div class="pricebox"><small class="lab">${priceLabel(it)}</small>
         <div class="price">${money(it.top ?? it.min)}</div>
         <div class="lead ${it.top==null?'none':''}">${leadHtml(it)}</div></div>
     </div></section></main>`;
 }
-function multi(ris){                   // 一轮多件:自动排成网格
+function multi(ris){
   const n = ris.length;
   const cols = n<=3 ? n : n===4 ? 2 : n<=6 ? 3 : n<=8 ? 4 : 5, rows = Math.ceil(n/cols);
   const fs = n<=2 ? 'clamp(1rem,1.7vw,2.1rem)' : n<=4 ? 'clamp(.9rem,1.35vw,1.8rem)' : n<=6 ? 'clamp(.85rem,1.15vw,1.5rem)' : 'clamp(.75rem,.95vw,1.3rem)';
@@ -314,11 +395,11 @@ function multi(ris){                   // 一轮多件:自动排成网格
     <div class="cards" style="--fs:${fs};grid-template-columns:repeat(${cols},minmax(0,1fr));grid-template-rows:repeat(${rows},minmax(0,1fr))">
       ${ris.map(it => `<article class="mc ${fl(it)?'flash':''}">
         <div class="mp ph" style="${bg(it)}">${face(it)}${sealOf(it)}</div>
-        <h3>${it.name}</h3><small>${priceLabel(it)}</small>
+        <h3>${esc(it.name)}</h3><small>${priceLabel(it)}</small>
         <div class="price">${money(it.top ?? it.min)}</div>
         <div class="lead2 ${it.top==null?'none':''}">${leadShort(it)}</div></article>`).join('')}
     </div>
-    <div class="right"><div class="top2"><div class="qr"><div>二维码</div>扫码出价</div>
+    <div class="right"><div class="top2"><div class="qr"><div>${qrSvg()}</div>扫码出价</div>
       <div class="cd" id="cdBox"><span id="cdLbl"></span><b id="cd"></b></div></div>
       <small class="rl">第 ${round.no} 轮,本轮 ${n} 件</small></div></section></main>`;
 }
@@ -327,8 +408,8 @@ function viewScreen(){
   const ris = roundItems();
   let body;
   if (finished) body = `<section class="msg"><h2>竞价全部结束</h2><p>本场共筹得 <b style="color:var(--gold)">${money(total())}</b>。感谢大家的参与,得标者请留意工作人员联络。</p>
-    <div class="results">${items.map(i => `<div class="res"><b>${i.name}</b>${i.top==null ? '<small>无人出价</small>' : `<div class="price">${money(i.top)}</div><small>桌 ${i.table}${tailOf(i)?',尾号 '+tailOf(i):''}</small>`}</div>`).join('')}</div></section>`;
-  else if (!round) body = `<section class="msg"><h2>竞价即将开始</h2><p>今晚共 ${items.length} 件木刻作品,价高者得。</p></section>`;
+    <div class="results">${items.map(i => `<div class="res"><b>${esc(i.name)}</b>${i.top==null ? '<small>无人出价</small>' : `<div class="price">${money(i.top)}</div><small>桌 ${i.table}${tailOf(i)?',尾号 '+tailOf(i):''}</small>`}</div>`).join('')}</div></section>`;
+  else if (!round || !ris.length) body = `<section class="msg"><h2>竞价即将开始</h2><p>今晚共 ${items.length} 件木刻作品,价高者得。</p></section>`;
   else body = ris.length === 1 ? single(ris[0]) : multi(ris);
   $('#app').innerHTML = `<header class="bar"><h1>XXX筹款晚会</h1><span>价高者得</span></header>${body}`;
   last = Object.fromEntries(items.map(i => [i.id, i.top]));
@@ -336,14 +417,13 @@ function viewScreen(){
   tick();
 }
 
-/* ===== 出价页(手机):先看本轮清单,再选一件出价 ===== */
+/* ===== 出价页(手机) ===== */
 const bidId = () => (location.hash || '').split('/')[2] || '';
 const stTag = {win:'你得标了', lose:'未得标', ahead:'你领先', behind:'已被超越'};
 function myStatus(it){
-  const m = me(); if (!m) return '';
-  const lead = it.phone && norm(it.phone) === m;
-  const joined = bids.some(b => b.item === it.id && !b.void && norm(b.phone) === m);
-  return isClosed(it) ? (lead ? 'win' : joined ? 'lose' : '') : (lead ? 'ahead' : joined ? 'behind' : '');
+  const ids = myBids()[it.id] || []; if (!ids.length) return '';
+  const lead = ids.includes(it.lastBid);
+  return isClosed(it) ? (lead ? 'win' : 'lose') : (lead ? 'ahead' : 'behind');
 }
 const wrapMsg = (h, p) => { $('#app').innerHTML = `<div class="wrap wait"><h1>${h}</h1><p>${p}</p></div>`; };
 function viewBid(){
@@ -352,11 +432,11 @@ function viewBid(){
   const id = bidId();
   if (finished) return wrapMsg('竞价全部结束', '感谢参与。得标者请留意工作人员联络。');
   if (!round) return wrapMsg('竞价还没开始', '主持人宣布开始后,这个页面会自动出现这一轮的物品。');
-  if (id && round.ids.includes(id)) return viewBidItem(get(id));
+  if (id && round.ids.includes(id) && get(id)) return viewBidItem(get(id));
   viewList();
 }
 function viewList(){
-  const closed = round.status === 'closed';
+  const closed = round.status !== 'open';
   $('#app').innerHTML = `<div class="wrap">
     <small class="no">第 ${round.no} 轮,共 ${round.ids.length} 件</small>
     <h1 class="bt">${closed ? '本轮已结束' : '选择要出价的物品'}</h1>
@@ -364,7 +444,7 @@ function viewList(){
     ${roundItems().map(it => { const s = myStatus(it); return `
       <a class="li" href="#/bid/${it.id}">
         <div class="th ph" style="${bg(it)}">${face(it)}</div>
-        <div class="lm"><b>${it.name}</b><small>${it.top==null ? '起拍价 '+money(it.min) : (closed?'成交 ':'目前 ')+money(it.top)}</small></div>
+        <div class="lm"><b>${esc(it.name)}</b><small>${it.top==null ? '起拍价 '+money(it.min) : (closed?'成交 ':'目前 ')+money(it.top)}</small></div>
         ${s ? `<span class="tag ${s}">${stTag[s]}</span>` : '<span>›</span>'}
       </a>`; }).join('')}</div>`;
 }
@@ -374,7 +454,7 @@ function viewBidItem(it){
     <div class="wrap">
       <a class="back" href="#/bid">‹ 返回本轮清单</a>
       <div class="hero ph" style="${bg(it)}">${face(it)}${sealOf(it)}</div>
-      <h1 class="bt">${it.name}</h1>
+      <h1 class="bt">${esc(it.name)}</h1>
       <div class="stat stitch" id="stat">
         <div><small id="lbl"></small><div class="price" id="top"></div></div>
         <div class="lead" id="lead"></div>
@@ -402,10 +482,10 @@ function viewBidItem(it){
       </div>
     </div>`;
   const amt = $('#amt');
-  const bump = d => { const v = parseInt(amt.value,10) || nextMin(it); amt.value = Math.max(nextMin(it), v + d*it.inc); };
+  const bump = d => { const v = parseInt(amt.value,10) || nextMin(it); amt.value = Math.max(nextMin(get(it.id)), v + d*it.inc); };
   $('#minus').onclick = () => bump(-1);
   $('#plus').onclick = () => bump(1);
-  $('#go').onclick = () => submit(it);
+  $('#go').onclick = () => submit(it.id);
   if ($('#editid')) $('#editid').onclick = () => { $('#idf').style.display = ''; $('#idsum').style.display = 'none'; };
   liveBid(it.id);
 }
@@ -434,44 +514,59 @@ function liveBid(id){
   $('#formBox').style.display = closed ? 'none' : '';
   $('#closedBox').innerHTML = closed ? '<div class="closed">本轮竞价已结束。</div>' : '';
 }
-function submit(it){
+function submit(id){
+  const it = get(id);
   const err = m => { $('#err').textContent = m; };
+  const showId = () => { $('#idf').style.display = ''; if ($('#idsum')) $('#idsum').style.display = 'none'; };
   const n = $('#who').value.trim(), t = $('#tb').value.trim(), p = $('#phone').value.trim(), a = parseInt($('#amt').value,10);
-  if (!n){ $('#idf').style.display = ''; if ($('#idsum')) $('#idsum').style.display = 'none'; return err('请填写姓名。'); }
-  if (!/^\d{1,3}$/.test(t)) return err('请填写桌号,只填数字,例如 5。');
-  if (norm(p).length < 8) return err('手机号格式不对,请检查后再提交。');
+  if (!n){ showId(); return err('请填写姓名。'); }
+  if (!/^\d{1,3}$/.test(t)){ showId(); return err('请填写桌号,只填数字,例如 5。'); }
+  if (norm(p).length < 8){ showId(); return err('手机号格式不对,请检查后再提交。'); }
   if (!a) return err('请填写出价金额。');
   if (a < nextMin(it)) return err(it.top==null ? `出价不能低于起拍价 ${money(it.min)}。` : `最低出价是 ${money(nextMin(it))}。`);
   err('');
   const m = document.createElement('div');
   m.className = 'modal';
   m.innerHTML = `<div class="box" role="dialog" aria-modal="true">
-      <h3>确认出价</h3><p>${it.name}</p><p>${esc(n)},桌 ${t},手机 ${p}</p>
+      <h3>确认出价</h3><p>${esc(it.name)}</p><p>${esc(n)},桌 ${esc(t)},手机 ${esc(p)}</p>
       <div class="price">${money(a)}</div>
       <button class="btn" id="ok">确认出价</button>
       <button class="btn ghost" id="cancel">返回修改</button></div>`;
   document.body.appendChild(m);
   $('#cancel').onclick = () => m.remove();
-  $('#ok').onclick = () => {
-    const r = place(it.id, t, a, p, 'guest', n);
+  $('#ok').onclick = async () => {
+    $('#ok').disabled = true; $('#ok').textContent = '提交中…';
+    const r = await placeBid(it.id, t, a, p, 'guest', n);
     m.remove();
     if (!r.ok){ liveBid(it.id); return err(r.msg); }
-    save(t, p, n);
-    $('#amt').value = nextMin(it);
+    save(t, p, n); remember(it.id, r.bidId);
+    $('#amt').value = nextMin(get(it.id));
     liveBid(it.id);
   };
 }
 
 /* ===== 管理页 ===== */
-const esc = x => String(x).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const clock = t => { const d = new Date(t); return pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()); };
 const itemName = id => (items.find(i => i.id === id) || {}).name || '';
-const stText = it => ({pending:'未开始', open:'进行中', closed:'已结束'}[it.status]);
+const stText = it => isClosed(it) ? '已结束' : it.status === 'open' ? '进行中' : '未开始';
 
 function viewAdmin(){
   document.body.className = 'admin';
+  if (!user){
+    $('#app').innerHTML = `<div class="wrap"><h1 class="bt">管理员登录</h1>
+      <label>邮箱<input id="em" type="email" autocomplete="username"></label>
+      <label>密码<input id="pw" type="password" autocomplete="current-password"></label>
+      <p class="err" id="lerr"></p><button class="go" id="login">登录</button></div>`;
+    const go = async () => { try { await auth.signInWithEmailAndPassword($('#em').value.trim(), $('#pw').value); } catch(e){ $('#lerr').textContent = '登录失败:邮箱或密码不对。'; } };
+    $('#login').onclick = go; $('#pw').onkeydown = e => { if (e.key === 'Enter') go(); };
+    return;
+  }
+  if (adminErr){
+    $('#app').innerHTML = `<div class="wrap wait"><h1>没有管理员权限</h1><p>这个账号的邮箱需要写进安全规则里的管理员名单。(${esc(adminErr)})</p><button class="btn ghost" data-act="logout">退出登录</button></div>`;
+    return;
+  }
   $('#app').innerHTML = `<div class="adm"><h1 class="bt">管理页</h1>
-    <small>正式版需要登录才能进入,现在是预览。</small>
+    <div class="nav"><a class="b line" href="#/screen" target="_blank">打开大屏页</a><a class="b line" href="#/bid" target="_blank">打开出价页</a><button class="b line" data-act="logout">退出登录</button></div>
     <div class="tabs">${[['live','现场控制'],['log','出价记录'],['items','物品管理'],['res','得标名单']]
       .map(([k,v]) => `<button class="${tab===k?'on':''}" data-act="tab" data-k="${k}">${v}</button>`).join('')}</div>
     <div id="tabBody"></div></div>`;
@@ -498,7 +593,8 @@ function renderTab(){
   else b.innerHTML = '<div class="panel" id="resBox"></div>';
   adminRefresh();
 }
-function adminRefresh(){               // 只更新会变的部分,不打断正在输入的栏位
+function adminRefresh(){
+  if (!user || adminErr) return;
   if (tab === 'live'){
     renderLive();
     const m = $('#miniLog'); if (m) m.innerHTML = logTable(bids.slice(-8).reverse());
@@ -513,6 +609,7 @@ function adminRefresh(){               // 只更新会变的部分,不打断正�
 }
 function selHtml(){
   const pend = items.filter(i => i.status === 'pending');
+  if (!items.length) return '<p><small>还没有物品。请到"物品管理"点"载入示例物品",或新增物品。</small></p>';
   if (!pend.length) return '<p><small>没有待拍的物品了,可以点"结束全场"。</small></p>';
   const n = sel.filter(id => pend.some(p => p.id === id)).length;
   return `<div class="sel"><b>选择下一轮要拍的物品(最多 ${MAXROUND} 件)</b>
@@ -549,9 +646,11 @@ function itemsHtml(){
     <td>${stText(it)}</td>
     <td class="nw">${p ? `<button class="b line" data-act="mv" data-i="${i}" data-d="-1">↑</button><button class="b line" data-act="mv" data-i="${i}" data-d="1">↓</button><button class="b line" data-act="del" data-i="${i}">删除</button>` : ''}</td></tr>`; }).join('')}
   </tbody></table><div class="btns"><button class="b line" data-act="add">+ 新增物品</button></div>
-  <p><small>照片放进网站的 photos 文件夹,再把路径填在这里;留空则显示占位图。已开始的物品不能再改。开始哪几件,在"现场控制"里勾选。</small></p></div>`;
+  <p><small>照片放进网站的 photos 文件夹,再把路径填在这里;留空则显示占位图。已开始的物品不能再改。开始哪几件,在"现场控制"里勾选。</small></p></div>
+  <div class="panel"><b>演练工具</b><p><small>"载入示例物品"会新增 10 件示例。"清空演练数据"会删除所有出价并把物品重置,正式开始前使用。</small></p>
+    <div class="btns"><button class="b line" data-act="seed">载入示例物品</button><button class="b red" data-act="reset">清空演练数据</button></div></div>`;
 }
-function people(){                     // 按个人汇总:同一个手机号得标的所有物品
+function people(){
   const m = {};
   items.filter(i => isClosed(i) && i.top != null).forEach(i => {
     const k = norm(i.phone) || '无手机号-桌' + i.table;
@@ -568,7 +667,7 @@ function renderRes(){
     <b>按个人汇总(收款用)</b>
     ${people().length ? `<table class="t"><thead><tr><th>姓名</th><th>手机号</th><th>桌号</th><th>得标物品</th><th>应付合计</th></tr></thead><tbody>${people().map(o =>
       `<tr><td>${esc(o.who)}</td><td>${esc(o.phone)}</td><td>${[...o.tables].join('、')}</td><td>${esc(o.list.join(';'))}</td><td>${money(o.sum)}</td></tr>`).join('')}</tbody></table>` : '<p><small>还没有已结束的成交。</small></p>'}
-    <div class="btns"><button class="b" data-act="csv">下载 CSV(按物品)</button><button class="b" data-act="csv2">下载 CSV(按个人)</button></div>`;
+    <div class="btns"><button class="b" data-act="csv">下载 CSV(按物品)</button><button class="b" data-act="csv2">下载 CSV(按个人)</button><button class="b line" data-act="csv3">下载全部出价记录</button></div>`;
 }
 function download(rows, name){
   const q = v => '"' + String(v).replace(/"/g,'""') + '"';
@@ -576,31 +675,43 @@ function download(rows, name){
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
 }
 const txt = v => v ? '\t' + v : '';       // 手机号前加制表符,Excel 不会吃掉开头的 0
-function act(a, d){
-  const now = Date.now(), open = round && round.status === 'open';
-  if (a === 'tab'){ tab = d.k; return viewAdmin(); }
-  if (a === 'csv') return download([['物品','状态','成交价','得标人','得标桌号','手机号'], ...items.map(i => [i.name, stText(i), i.top ?? '', i.bidder || '', i.table ?? '', txt(i.phone)])], 'results.csv');
-  if (a === 'csv2') return download([['姓名','手机号','桌号','得标物品','应付合计'], ...people().map(o => [o.who, txt(o.phone), [...o.tables].join('、'), o.list.join(';'), o.sum])], 'by-person.csv');
-  if (a === 'selAll') sel = items.filter(i => i.status === 'pending').slice(0, MAXROUND).map(i => i.id);
-  if (a === 'selNone') sel = [];
-  if (a === 'startRound' && sel.length <= MAXROUND) startRound(sel);
-  if (a === 'ext' && open) round.endAt = Math.max(round.endAt || 0, now) + d.s*1000;
-  if (a === 'end') closeRound();
-  if (a === 'reopen') reopenRound();
-  if (a === 'finish' && !open) finished = true;
-  if (a === 'void'){ const b = bids.find(b => b.id === +d.id); if (b){ b.void = !b.void; recalc(get(b.item)); } }
-  if (a === 'proxy'){
-    const e = $('#pErr'), t = $('#pt').value.trim(), p = $('#pp').value.trim(), v = parseInt($('#pa').value,10), id = $('#pi').value;
-    if (!id){ e.textContent = '现在没有进行中的物品。'; return; }
-    if (!/^\d{1,3}$/.test(t)){ e.textContent = '请填写桌号(数字)。'; return; }
-    if (!v){ e.textContent = '请填写金额。'; return; }
-    const r = place(id, t, v, p || '纸本', 'staff', $('#pn').value.trim());
-    e.textContent = r.ok ? '' : r.msg;
-    if (r.ok){ $('#pn').value = ''; $('#pt').value = ''; $('#pp').value = ''; $('#pa').value = ''; }
-  }
-  if (a === 'add') items.push({id:'n'+now, name:'新物品', emoji:'新', c1:'#d8b27a', c2:'#b98a52', min:100, inc:10, top:null, table:null, phone:null, photo:'', status:'pending'});
-  if (a === 'del') items.splice(+d.i, 1);
-  if (a === 'mv'){ const i = +d.i, j = i + +d.d; if (j >= 0 && j < items.length && items[j].status === 'pending') [items[i], items[j]] = [items[j], items[i]]; }
+async function act(a, d){
+  const open = round && round.status === 'open';
+  try {
+    if (a === 'logout') return auth.signOut();
+    if (a === 'tab'){ tab = d.k; return viewAdmin(); }
+    if (a === 'csv') return download([['物品','状态','成交价','得标人','得标桌号','手机号'], ...items.map(i => [i.name, stText(i), i.top ?? '', i.bidder || '', i.top==null ? '' : i.table, txt(i.phone)])], 'results.csv');
+    if (a === 'csv2') return download([['姓名','手机号','桌号','得标物品','应付合计'], ...people().map(o => [o.who, txt(o.phone), [...o.tables].join('、'), o.list.join(';'), o.sum])], 'by-person.csv');
+    if (a === 'csv3') return download([['时间','物品','姓名','桌号','金额','手机号','来源','是否作废'], ...bids.map(b => [new Date(b.time).toLocaleString(), itemName(b.item), b.who || '', b.table, b.amount, txt(b.phone), b.source==='staff'?'工作人员':'宾客', b.void?'是':''])], 'all-bids.csv');
+    if (a === 'selAll') sel = items.filter(i => i.status === 'pending').slice(0, MAXROUND).map(i => i.id);
+    if (a === 'selNone') sel = [];
+    if (a === 'startRound' && sel.length <= MAXROUND) await startRound(sel);
+    if (a === 'ext' && open){
+      if (R.durMs > 0) await roundRef().update({extraMs:FV().increment(+d.s*1000)});
+      else await roundRef().update({startedAt:FV().serverTimestamp(), durMs:+d.s*1000, extraMs:0});
+    }
+    if (a === 'end') await closeRound();
+    if (a === 'reopen') await reopenRound();
+    if (a === 'finish' && !open) await roundRef().set({finished:true}, {merge:true});
+    if (a === 'void') await setVoid(d.id, !(bids.find(b => b.id === d.id) || {}).void);
+    if (a === 'proxy'){
+      const e = $('#pErr'), t = $('#pt').value.trim(), p = $('#pp').value.trim(), v = parseInt($('#pa').value,10), id = $('#pi').value;
+      if (!id){ e.textContent = '现在没有进行中的物品。'; return; }
+      if (!/^\d{1,3}$/.test(t)){ e.textContent = '请填写桌号(数字)。'; return; }
+      if (!v){ e.textContent = '请填写金额。'; return; }
+      const r = await placeBid(id, t, v, p || '纸本', 'staff', $('#pn').value.trim());
+      e.textContent = r.ok ? '' : r.msg;
+      if (r.ok){ $('#pn').value = ''; $('#pt').value = ''; $('#pp').value = ''; $('#pa').value = ''; }
+    }
+    if (a === 'add') await col('items').doc().set({name:'新物品', emoji:'新', c1:'#d8b27a', c2:'#b98a52', min:100, inc:10, photo:'', order:items.reduce((m,i) => Math.max(m, i.order||0), 0) + 1, ...BLANK});
+    if (a === 'del') await itemRef(items[+d.i].id).delete();
+    if (a === 'mv'){
+      const x = items[+d.i], y = items[+d.i + +d.d];
+      if (x && y && y.status === 'pending'){ const b = db.batch(); b.update(itemRef(x.id), {order:y.order}); b.update(itemRef(y.id), {order:x.order}); await b.commit(); }
+    }
+    if (a === 'seed') await seedDemo();
+    if (a === 'reset') await resetAll();
+  } catch(e){ alert('操作没有成功:' + (e.code || e.message)); }
   refresh();
   if (isAdmin() && tab === 'items') renderTab();
 }
@@ -611,16 +722,22 @@ $('#app').addEventListener('change', e => {
   if (t.dataset.sel){ sel = t.checked ? [...sel, t.dataset.sel] : sel.filter(x => x !== t.dataset.sel); renderLive(); }
   if (t.dataset.f){
     const x = items[+t.dataset.i], f = t.dataset.f;
-    x[f] = f === 'min' ? Math.max(0, parseInt(t.value,10) || 0) : f === 'inc' ? Math.max(1, parseInt(t.value,10) || 1) : t.value;
+    const v = f === 'min' ? Math.max(0, parseInt(t.value,10) || 0) : f === 'inc' ? Math.max(1, parseInt(t.value,10) || 1) : t.value.trim();
+    itemRef(x.id).update({[f]:v}).catch(err => alert('保存失败:' + (err.code || err.message)));
   }
 });
 
-/* ===== 路由、计时、预览工具 ===== */
+/* ===== 路由、计时 ===== */
 const view = () => (location.hash || '#/screen').split('/')[1];
 const isBid = () => view() === 'bid', isAdmin = () => view() === 'admin';
-function route(){ isAdmin() ? viewAdmin() : isBid() ? viewBid() : viewScreen(); }
-function refresh(){                    // 数据变了:换轮就整页重画,否则只更新数字,不打断填写
-  if (isAdmin()) return adminRefresh();
+function route(){
+  if (isAdmin()){ if (!unsubs.length) startSync(); return viewAdmin(); }
+  if (isBid() && document.hidden) return;
+  if (!unsubs.length) startSync();
+  isBid() ? viewBid() : viewScreen();
+}
+function refresh(){
+  if (isAdmin()) return user ? adminRefresh() : undefined;
   if (isBid()){
     if (key() !== viewKey) return viewBid();
     const id = bidId();
@@ -637,26 +754,42 @@ function cdInfo(){
   return ['距离截止', fmt(left), left <= 10000];
 }
 function tick(){
-  if (round && round.status === 'open' && round.endAt && Date.now() >= round.endAt){ closeRound(); refresh(); return; }
+  if (round && round.status === 'open' && round.endAt && Date.now() >= round.endAt){ round.status = 'closed'; refresh(); }
+  if (user && round && round.dbStatus === 'open' && round.status === 'closed' && !closing){ closing = true; closeRound().catch(() => {}).finally(() => { closing = false; }); }
   const c = cdInfo(); if (!c) return;
   const [l, t, urgent] = c;
   const cd = $('#cd'); if (cd){ cd.textContent = t; $('#cdLbl').textContent = l; $('#cdBox').classList.toggle('end', urgent); }
   const a = $('#admCd'); if (a){ a.textContent = t; a.classList.toggle('end', urgent); }
 }
-setInterval(tick, 1000);
-window.addEventListener('hashchange', route);
 
-const PHONES = ['0123456781','0123456782','0123456783','0123456784','0123456785','0123456786','0123456787','0123456788','0123456789','0112233445','0198765432','0171234567'];
-$('#sim').onclick = () => {
-  if (!round || round.status !== 'open') return;
-  const it = get(round.ids[Math.floor(Math.random()*round.ids.length)]);
-  const k = Math.floor(Math.random()*PHONES.length);
-  place(it.id, 1 + Math.floor(Math.random()*20), nextMin(it) + it.inc*Math.floor(Math.random()*3), PHONES[k], 'guest', '宾客' + (k+1));
-  refresh();
-};
-$('#reset').onclick = () => { items = makeItems(); bids = []; bidSeq = 0; round = null; roundNo = 0; finished = false; sel = []; last = {}; route(); };
-
-route();
+/* ===== 启动 ===== */
+if (!configured){
+  $('#app').innerHTML = '<div class="wrap wait"><h1>还没有填写 Firebase 设置</h1><p>请把 firebaseConfig 粘贴到文件开头的设置区,再重新打开。</p></div>';
+} else if (typeof firebase === 'undefined'){
+  $('#app').innerHTML = '<div class="wrap wait"><h1>无法加载 Firebase</h1><p>请检查网络后刷新页面。</p></div>';
+} else {
+  $('#app').innerHTML = '<div class="wrap wait"><h1>连接中…</h1></div>';
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  db.settings({experimentalAutoDetectLongPolling:true});   // 场地网络不好时自动换连接方式
+  auth = firebase.auth();
+  auth.onAuthStateChanged(u => {
+    user = u; adminErr = ''; bids = [];
+    if (adminUnsub){ adminUnsub(); adminUnsub = null; }
+    if (u) adminUnsub = col('bids').orderBy('createdAt').onSnapshot(s => {
+      bids = s.docs.map(d => { const x = d.data({serverTimestamps:'estimate'}); return {id:d.id, ...x, time: x.createdAt ? x.createdAt.toMillis() : Date.now()}; });
+      enrich(); if (shown && isAdmin()) adminRefresh();
+    }, e => { adminErr = e.code || 'error'; if (shown && isAdmin()) viewAdmin(); });
+    if (shown && isAdmin()) viewAdmin();
+  });
+  window.addEventListener('hashchange', () => { if (shown) route(); else if (isAdmin()) { startSync(); } });
+  document.addEventListener('visibilitychange', () => {   // 手机息屏时暂停连接,节省免费额度
+    if (isAdmin() || !isBid()) return;
+    document.hidden ? stopSync() : (ready = {items:false, round:false}, shown = false, startSync());
+  });
+  startSync();
+  setInterval(tick, 1000);
+}
 </script>
 </body>
 </html>
