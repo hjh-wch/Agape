@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>爱加倍</title>
+<script src="config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -203,6 +204,17 @@ select{width:100%;font:inherit;font-size:1.05rem;padding:.7rem;margin-top:.35rem
 .qr svg{width:90%;height:auto;display:block}
 .nav{display:flex;gap:.6rem;flex-wrap:wrap;margin:.6rem 0}
 .nav a{display:inline-block;text-decoration:none}
+
+/* ---------- 各自提交金额的表单 ---------- */
+.ic{display:flex;align-items:center;gap:.8rem;padding:.7rem;margin-bottom:.7rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+.ic .lm small{display:block}
+.ic input{width:7.5rem;flex:none;margin:0;text-align:center;font-weight:700}
+.ic.any{border-style:dashed}
+.sent{color:var(--ok);font-weight:700}
+.okb{padding:.8rem 1rem;margin-bottom:1rem;border-radius:10px;background:rgba(47,107,58,.12);color:var(--ok);font-weight:700;text-align:center}
+.res2{padding:.8rem;margin-bottom:.7rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+.res2 b{font-family:var(--serif)}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
@@ -213,67 +225,55 @@ select{width:100%;font:inherit;font-size:1.05rem;padding:.7rem;margin-top:.35rem
 <div id="app"></div>
 
 <script>
-/* ============================================================
-   第 1 步:把 Firebase 控制台里的 firebaseConfig 粘贴到下面,
-   替换掉 { } 里面的内容(保留前后的 const firebaseConfig = 和分号)
-   ============================================================ */
-  const firebaseConfig = {
-    apiKey: "AIzaSyBV1iHktFWtZW3wrYcDJ6zmt4YKSMC9kVc",
-    authDomain: "agape-mega.firebaseapp.com",
-    projectId: "agape-mega",
-    storageBucket: "agape-mega.firebasestorage.app",
-    messagingSenderId: "212589354348",
-    appId: "1:212589354348:web:e69ce9871018c2d317e749"
-  };
+/* Firebase 设置在同一个文件夹的 config.js 里,更新网页时不用再改这里 */
+const configured = typeof firebaseConfig !== 'undefined' && !/粘贴/.test(JSON.stringify(firebaseConfig));
 
 /* ===== 其他设置 ===== */
 const CUR = 'RM ', TAIL = 3, MAXROUND = 10;      // 币种、大屏显示手机尾号位数、一轮最多件数
-const configured = !/粘贴/.test(JSON.stringify(firebaseConfig));
 const money = n => CUR + Number(n).toLocaleString('en-US');
 const DEMO = [
-  {name:'「福」字木雕牌匾',   emoji:'福', c1:'#d8b27a', c2:'#b98a52', min:200, inc:20, photo:''},
-  {name:'「家和万事兴」匾额', emoji:'和', c1:'#c9a068', c2:'#a77a47', min:300, inc:20},
-  {name:'鲤鱼戏莲木雕摆件',   emoji:'鲤', c1:'#deba84', c2:'#c0955c', min:150, inc:10},
-  {name:'观音木雕像',         emoji:'观', c1:'#cfa571', c2:'#b08350', min:250, inc:20},
-  {name:'双龙戏珠木刻挂板',   emoji:'龙', c1:'#c59a63', c2:'#a5753f', min:200, inc:20},
-  {name:'梅兰竹菊木刻屏风',   emoji:'梅', c1:'#d6ae78', c2:'#b98d55', min:350, inc:30},
-  {name:'马到成功木雕摆件',   emoji:'马', c1:'#d3ab72', c2:'#b58650', min:180, inc:20},
-  {name:'莲花木雕灯座',       emoji:'莲', c1:'#cda468', c2:'#ad7d48', min:120, inc:10},
-  {name:'「寿」字木雕寿匾',   emoji:'寿', c1:'#dab67e', c2:'#bb8f58', min:260, inc:20},
-  {name:'竹节木刻笔筒',       emoji:'竹', c1:'#d0a96f', c2:'#b2824c', min:90,  inc:10},
+  {name:'「福」字木雕牌匾',   emoji:'福', c1:'#d8b27a', c2:'#b98a52', min:200, photo:''},
+  {name:'「家和万事兴」匾额', emoji:'和', c1:'#c9a068', c2:'#a77a47', min:300, photo:''},
+  {name:'鲤鱼戏莲木雕摆件',   emoji:'鲤', c1:'#deba84', c2:'#c0955c', min:150, photo:''},
+  {name:'观音木雕像',         emoji:'观', c1:'#cfa571', c2:'#b08350', min:250, photo:''},
+  {name:'双龙戏珠木刻挂板',   emoji:'龙', c1:'#c59a63', c2:'#a5753f', min:200, photo:''},
+  {name:'梅兰竹菊木刻屏风',   emoji:'梅', c1:'#d6ae78', c2:'#b98d55', min:350, photo:''},
+  {name:'马到成功木雕摆件',   emoji:'马', c1:'#d3ab72', c2:'#b58650', min:180, photo:''},
+  {name:'莲花木雕灯座',       emoji:'莲', c1:'#cda468', c2:'#ad7d48', min:120, photo:''},
+  {name:'「寿」字木雕寿匾',   emoji:'寿', c1:'#dab67e', c2:'#bb8f58', min:260, photo:''},
+  {name:'竹节木刻笔筒',       emoji:'竹', c1:'#d0a96f', c2:'#b2824c', min:90,  photo:''},
 ];
-const BLANK = {status:'pending', top:null, table:null, tail:'', who:'', lastBid:null};
-const IDLE = {no:0, ids:[], status:'idle', finished:false, startedAt:null, durMs:0, extraMs:0};
+const BLANK = {status:'pending', top:null, table:null, tail:'', who:'', lastBid:null, roundNo:null};
+const IDLE = {no:0, ids:[], status:'idle', finished:false, resolved:false, startedAt:null, durMs:0, extraMs:0};
 
 /* ===== 状态(全部来自数据库) ===== */
 let db, auth, user = null;
 let items = [], R = null, round = null, finished = false;
 let bids = [], adminErr = '';
-let unsubs = [], adminUnsub = null, ready = {items:false, round:false}, shown = false, closing = false;
+let unsubs = [], adminUnsub = null, ready = {items:false, round:false}, shown = false, closing = false, autoNo = null;
 let last = {}, viewKey = '', sel = [], durMin = 2, tab = 'live';
 
 const $ = s => document.querySelector(s);
 const get = id => items.find(i => i.id === id);
 const roundItems = () => round ? round.ids.map(get).filter(Boolean) : [];
 const isClosed = it => it.status === 'closed' || (!!round && round.ids.includes(it.id) && round.status !== 'open');
-const nextMin = it => it.top == null ? it.min : it.top + it.inc;
 const pad = n => String(n).padStart(2,'0');
 const fmt = ms => { const s=Math.max(0,Math.floor(ms/1000)); const h=Math.floor(s/3600), m=Math.floor(s%3600/60); return (h?h+':':'')+pad(m)+':'+pad(s%60); };
 const bg = it => `background:linear-gradient(135deg,${it.c1},${it.c2})`;
 const face = it => it.photo ? `<img src="${esc(it.photo)}" alt="">` : it.emoji;
 const norm = p => String(p || '').replace(/\D/g, '');
 const tailOf = it => it.tail || '';
-const leadHtml = it => it.top==null ? (isClosed(it)?'无人参与':'等待加倍')
-  : `${isClosed(it)?'得标':'领先'}<b>${esc(it.who || '桌 '+it.table)}</b><small class="tl">${[it.who ? '桌 '+it.table : '', tailOf(it) ? '尾号 '+tailOf(it) : ''].filter(Boolean).join(',')}</small>`;
-const leadShort = it => it.top==null ? (isClosed(it)?'无人参与':'等待加倍')
-  : `${isClosed(it)?'得标 ':''}${[it.who, '桌 '+it.table, tailOf(it) ? '尾号 '+tailOf(it) : ''].filter(Boolean).join(',')}`;
-const priceLabel = it => it.top==null ? '低价' : (isClosed(it)?'最高金额':'目前加倍金额');
-const key = () => `${round?round.no:0}:${round?round.status:''}:${finished}`;
+const leadHtml = it => it.top==null ? '无人参与'
+  : `得标<b>${esc(it.who || '桌 '+it.table)}</b><small class="tl">${[it.who ? '桌 '+it.table : '', tailOf(it) ? '尾号 '+tailOf(it) : ''].filter(Boolean).join(',')}</small>`;
+const leadShort = it => it.top==null ? '无人参与'
+  : `得标 ${[it.who, '桌 '+it.table, tailOf(it) ? '尾号 '+tailOf(it) : ''].filter(Boolean).join(',')}`;
+const key = () => `${round?round.no:0}:${round?round.status:''}:${round?round.resolved:''}:${finished}`;
 const saved = () => { try { return JSON.parse(localStorage.getItem('bidder')) || {}; } catch(e){ return {}; } };
 const save = (table, phone, name) => { try { localStorage.setItem('bidder', JSON.stringify({table, phone, name})); } catch(e){} };
 const epoch = () => (R && R.epoch) || 0;      // 每次"清空演练数据"会换一个新编号,测试时留在手机里的记录就不再算数
-const myBids = () => { try { const m = JSON.parse(localStorage.getItem('mybids')) || {}; return m.e === epoch() ? (m.i || {}) : {}; } catch(e){ return {}; } };
-const remember = (itemId, bidId) => { try { const m = myBids(); (m[itemId] = m[itemId] || []).push(bidId); localStorage.setItem('mybids', JSON.stringify({e:epoch(), i:m})); } catch(e){} };
+const subKey = () => epoch() + ':' + (round ? round.no : 0);
+const mySubs = () => { try { const m = JSON.parse(localStorage.getItem('mysubs')) || {}; return m.k === subKey() && m.s && !Array.isArray(m.s) ? m.s : {}; } catch(e){ return {}; } };
+const remember = entries => { try { const o = mySubs(); entries.forEach(e => { if (e.amount > 0) o[e.item] = e.amount; else delete o[e.item]; }); localStorage.setItem('mysubs', JSON.stringify({k:subKey(), s:o})); } catch(e){} };
 const total = () => items.reduce((a,i) => a + (isClosed(i) && i.top ? i.top : 0), 0);
 const esc = x => String(x ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
@@ -288,7 +288,7 @@ function applyRound(d){
   if (!d || d.status === 'idle'){ round = null; finished = !!(d && d.finished); return; }
   const st = d.startedAt && d.startedAt.toMillis ? d.startedAt.toMillis() : Date.now();
   const endAt = d.durMs > 0 ? st + d.durMs + (d.extraMs || 0) : null;
-  round = {no:d.no, ids:d.ids || [], dbStatus:d.status, status:d.status, endAt};
+  round = {no:d.no, ids:d.ids || [], dbStatus:d.status, status:d.status, endAt, resolved:!!d.resolved};
   if (round.status === 'open' && endAt && Date.now() >= endAt) round.status = 'closed';
   finished = !!d.finished;
 }
@@ -301,53 +301,84 @@ function stopSync(){ unsubs.forEach(u => u()); unsubs = []; }
 function onData(){ if (!(ready.items && ready.round)) return; if (!shown){ shown = true; return route(); } refresh(); }
 function onErr(e){ $('#app').innerHTML = `<div class="wrap wait"><h1>连不上数据库</h1><p>请检查网络,或确认安全规则已经发布。(${esc(e.code || e.message)})</p></div>`; }
 
-const pick = list => list.reduce((m,b) => !m || b.amount > m.amount ? b : m, null);   // 同金额取先提交者
-function enrich(){ items.forEach(it => { const w = pick(bids.filter(b => b.item === it.id && !b.void)); it.phone = w ? w.phone : null; it.bidder = w ? w.who : null; }); }
+/* ===== 结果怎么算 =====
+   0. 同一个人(按手机号)对同一件作品,或对"随机一件",只认他最后一次提交;金额 0 表示取消。
+   1. 每件作品:指定这一件的金额里,最高的拿到(金额一样,先提交的拿到)。金额要不低于低价。
+   2. 随机金额,按金额从高到低依次处理:
+      在所有"他的金额能胜过目前最高金额"的作品里,拿走目前最高金额最低的那一件。
+      (还没人提交的作品,目前最高金额当作它的低价。)
+      被拿走的作品,原来的领先者就没有这一件了。 */
+const better = (a, b) => !b || a.amount > b.amount || (a.amount === b.amount && a.time < b.time);
+const keyOf = b => norm(b.phone) || 'n' + b.table + '|' + (b.who || '');
+function effective(list){
+  const m = {};
+  list.slice().sort((a,b) => a.time - b.time).forEach(b => { m[keyOf(b) + '|' + b.item] = b; });
+  return Object.values(m).filter(b => b.amount > 0);
+}
+function resolveRound(ids, list){
+  const eff = effective(list), top = {};
+  ids.forEach(id => top[id] = null);
+  eff.filter(b => b.item !== '*' && ids.includes(b.item)).forEach(b => { const it = get(b.item); if (it && b.amount >= it.min && better(b, top[b.item])) top[b.item] = b; });
+  eff.filter(b => b.item === '*').sort((a,b) => b.amount - a.amount || a.time - b.time).forEach(a => {
+    const cands = ids.filter(id => { const it = get(id); return it && a.amount >= it.min && (!top[id] || better(a, top[id])); });
+    if (!cands.length) return;
+    const ref = id => top[id] ? top[id].amount : get(id).min;
+    cands.sort((x,y) => ref(x) - ref(y) || ids.indexOf(x) - ids.indexOf(y));
+    top[cands[0]] = a;
+  });
+  return top;
+}
+function enrich(){ items.forEach(it => { const w = bids.find(b => b.id === it.lastBid); it.phone = w ? w.phone : null; it.bidder = w ? w.who : (it.who || null); }); }
 
-async function placeBid(itemId, table, amt, phone, source, who){
-  const ref = itemRef(itemId), bref = col('bids').doc();
+async function submitBids(entries, table, phone, source, who){
   try {
-    await db.runTransaction(async tx => {
-      const d = (await tx.get(ref)).data();
-      const need = d.top == null ? d.min : d.top + d.inc;
-      if (amt < need) throw {code:'low', need, top:d.top};
-      tx.set(bref, {item:itemId, table:Number(table), amount:amt, phone, who:who||'', source:source||'guest', void:false, createdAt:FV().serverTimestamp()});
-      tx.update(ref, {top:amt, table:Number(table), tail:norm(phone).slice(-TAIL), who:who||'', lastBid:bref.id});
-    });
-    return {ok:true, bidId:bref.id};
+    const b = db.batch();
+    entries.forEach(e => b.set(col('bids').doc(), {item:e.item, round:round.no, table:Number(table), amount:e.amount, phone, who:who||'', source:source||'guest', void:false, createdAt:FV().serverTimestamp()}));
+    await b.commit();
+    return {ok:true};
   } catch(e){
-    if (e.code === 'low') return {ok:false, msg: e.top==null ? `金额不能低于低价 ${money(e.need)}。` : `刚刚有人加到 ${money(e.top)},你的金额至少要 ${money(e.need)}。`};
-    if (e.code === 'permission-denied') return {ok:false, msg:'提交没有成功:这一轮可能已经截止。请看看大屏幕或刷新页面。'};
+    if (e.code === 'permission-denied') return {ok:false, msg:'提交没有成功:这一轮可能已经结束。请看看大屏幕或刷新页面。(' + e.code + ')'};
     return {ok:false, msg:'网络出了问题,提交没有成功,请再试一次。'};
   }
+}
+async function publishResults(rno){
+  const ids = round && round.no === rno ? round.ids : items.filter(i => i.roundNo === rno).map(i => i.id);
+  await new Promise(r => setTimeout(r, 1500));                       // 等最后一刻的提交都到齐
+  const snap = await col('bids').where('round', '==', rno).get();
+  const list = snap.docs.map(d => { const x = d.data({serverTimestamps:'estimate'}); return {id:d.id, ...x, time: x.createdAt ? x.createdAt.toMillis() : 0}; }).filter(b => !b.void);
+  const res = resolveRound(ids, list), b = db.batch();
+  ids.forEach(id => { const w = res[id];
+    b.update(itemRef(id), w ? {status:'closed', top:w.amount, table:w.table, tail:norm(w.phone).slice(-TAIL), who:w.who||'', lastBid:w.id}
+                            : {status:'closed', top:null, table:null, tail:'', who:'', lastBid:null}); });
+  if (round && round.no === rno) b.update(roundRef(), {resolved:true});
+  await b.commit();
 }
 async function startRound(ids){
   ids = ids.filter(id => get(id) && get(id).status === 'pending').slice(0, MAXROUND);
   if (!ids.length || (round && round.status === 'open')) return;
-  const b = db.batch();
-  ids.forEach(id => b.update(itemRef(id), {status:'open'}));
-  b.set(roundRef(), {no:(R && R.no || 0) + 1, ids, status:'open', startedAt:FV().serverTimestamp(), durMs: durMin > 0 ? Math.round(durMin*60000) : 0, extraMs:0, finished:false});
-  sel = []; await b.commit();
+  const no = (R && R.no || 0) + 1, b = db.batch();
+  ids.forEach(id => b.update(itemRef(id), {status:'open', roundNo:no}));
+  b.set(roundRef(), {no, ids, status:'open', resolved:false, startedAt:FV().serverTimestamp(), durMs: durMin > 0 ? Math.round(durMin*60000) : 0, extraMs:0, finished:false});
+  sel = []; autoNo = null; await b.commit();
 }
 async function closeRound(){
   if (!round || round.dbStatus !== 'open') return;
-  const b = db.batch();
-  round.ids.forEach(id => b.update(itemRef(id), {status:'closed'}));
-  b.update(roundRef(), {status:'closed'}); await b.commit();
+  await roundRef().update({status:'closed'});      // 先关门,之后不再收新的提交
+  await publishResults(round.no);
 }
 async function reopenRound(){
   if (!round || round.status === 'open') return;
   const b = db.batch();
-  round.ids.forEach(id => b.update(itemRef(id), {status:'open'}));
-  b.update(roundRef(), {status:'open', startedAt:FV().serverTimestamp(), durMs: durMin > 0 ? Math.round(durMin*60000) : 0, extraMs:0}); await b.commit();
+  round.ids.forEach(id => b.update(itemRef(id), {...BLANK, status:'open', roundNo:round.no}));
+  b.update(roundRef(), {status:'open', resolved:false, startedAt:FV().serverTimestamp(), durMs: durMin > 0 ? Math.round(durMin*60000) : 0, extraMs:0});
+  autoNo = null; await b.commit();
 }
 async function setVoid(id, v){
   const x = bids.find(b => b.id === id); if (!x) return;
-  const w = pick(bids.filter(b => b.item === x.item).map(b => b.id === id ? {...b, void:v} : b).filter(b => !b.void));
-  const b = db.batch();
-  b.update(col('bids').doc(id), {void:v});
-  b.update(itemRef(x.item), w ? {top:w.amount, table:w.table, tail:norm(w.phone).slice(-TAIL), who:w.who||'', lastBid:w.id} : {top:null, table:null, tail:'', who:'', lastBid:null});
-  await b.commit();
+  await col('bids').doc(id).update({void:v});
+  const ids = items.filter(i => i.roundNo === x.round);
+  const resolved = round && round.no === x.round ? round.resolved : ids.length > 0 && ids.every(i => i.status === 'closed');
+  if (resolved) await publishResults(x.round);      // 已经公布过的,作废后重新计算
 }
 async function seedDemo(){
   const base = items.reduce((m,i) => Math.max(m, i.order || 0), 0), b = db.batch();
@@ -366,7 +397,7 @@ async function deleteAll(){
 async function resetAll(){
   if (!confirm('确定要清空所有提交记录,并把所有物品重置为"未开始"吗?这个操作不能撤销,只应该在演练之后使用。')) return;
   for (let i = 0; i < bids.length; i += 400){ const b = db.batch(); bids.slice(i, i+400).forEach(x => b.delete(col('bids').doc(x.id))); await b.commit(); }
-  const b = db.batch(); items.forEach(it => b.update(itemRef(it.id), BLANK)); b.set(roundRef(), {...IDLE, epoch:Date.now()}); await b.commit(); sel = [];
+  const b = db.batch(); items.forEach(it => b.update(itemRef(it.id), BLANK)); b.set(roundRef(), {...IDLE, epoch:Date.now()}); await b.commit(); sel = []; autoNo = null;
 }
 
 /* ===== 大屏页 ===== */
@@ -378,22 +409,29 @@ function qrSvg(){
   catch(e){ qrCache = `<span style="font-size:.8rem;padding:.5rem;word-break:break-all">${esc(url)}</span>`; }
   return qrCache;
 }
+const last_ = it => last[it.id];
 const fl = it => last[it.id] !== undefined && last[it.id] !== it.top;
-const sealOf = it => isClosed(it) ? `<span class="seal">结束</span>` : '';
-
+const sealOf = it => round && round.resolved && isClosed(it) ? '<span class="seal">结束</span>' : '';
+function stateOf(it){                  // 大屏和手机上每件作品现在该显示什么
+  if (round.status === 'open') return {lab:'低价', val:money(it.min), lead:'', short:'', none:true};
+  if (!round.resolved) return {lab:'时间到', val:'统计中…', lead:'', short:'', none:true};
+  if (it.top == null) return {lab:'低价', val:money(it.min), lead:'无人参与', short:'无人参与', none:true};
+  return {lab:'最高金额', val:money(it.top), lead:leadHtml(it), short:leadShort(it), none:false};
+}
 function single(it){
+  const v = stateOf(it);
   return `<main class="stage"><section class="stitch ${fl(it)?'flash':''}">
     <div class="left">
       <div class="big ph" style="${bg(it)}">${face(it)}${sealOf(it)}</div>
       <div><small>第 ${items.indexOf(it)+1} 件,共 ${items.length} 件</small><h2>${esc(it.name)}</h2>
-        <p class="rule">低价 ${money(it.min)},每次至少加 ${money(it.inc)}</p></div>
+        <p class="rule">${round.status==='open' ? '想加倍的朋友,请扫码填写您的金额' : ''}</p></div>
     </div>
     <div class="right">
       <div class="top2"><div class="qr"><div>${qrSvg()}</div>扫码开始加倍</div>
         <div class="cd" id="cdBox"><span id="cdLbl"></span><b id="cd"></b></div></div>
-      <div class="pricebox"><small class="lab">${priceLabel(it)}</small>
-        <div class="price">${money(it.top ?? it.min)}</div>
-        <div class="lead ${it.top==null?'none':''}">${leadHtml(it)}</div></div>
+      <div class="pricebox"><small class="lab">${v.lab}</small>
+        <div class="price">${v.val}</div>
+        <div class="lead ${v.none?'none':''}">${v.lead}</div></div>
     </div></section></main>`;
 }
 function multi(ris){
@@ -402,11 +440,11 @@ function multi(ris){
   const fs = n<=2 ? 'clamp(1rem,1.7vw,2.1rem)' : n<=4 ? 'clamp(.9rem,1.35vw,1.8rem)' : n<=6 ? 'clamp(.85rem,1.15vw,1.5rem)' : 'clamp(.75rem,.95vw,1.3rem)';
   return `<main class="stage"><section class="stitch m">
     <div class="cards" style="--fs:${fs};grid-template-columns:repeat(${cols},minmax(0,1fr));grid-template-rows:repeat(${rows},minmax(0,1fr))">
-      ${ris.map(it => `<article class="mc ${fl(it)?'flash':''}">
+      ${ris.map(it => { const v = stateOf(it); return `<article class="mc ${fl(it)?'flash':''}">
         <div class="mp ph" style="${bg(it)}">${face(it)}${sealOf(it)}</div>
-        <h3>${esc(it.name)}</h3><small>${priceLabel(it)}</small>
-        <div class="price">${money(it.top ?? it.min)}</div>
-        <div class="lead2 ${it.top==null?'none':''}">${leadShort(it)}</div></article>`).join('')}
+        <h3>${esc(it.name)}</h3><small>${v.lab}</small>
+        <div class="price">${v.val}</div>
+        <div class="lead2 ${v.none?'none':''}">${v.short}</div></article>`; }).join('')}
     </div>
     <div class="right"><div class="top2"><div class="qr"><div>${qrSvg()}</div>扫码开始加倍</div>
       <div class="cd" id="cdBox"><span id="cdLbl"></span><b id="cd"></b></div></div>
@@ -418,7 +456,7 @@ function viewScreen(){
   let body;
   if (finished) body = `<section class="msg"><h2>爱加倍全部结束</h2><p>本场爱加倍金额合计 <b style="color:var(--gold)">${money(total())}</b>。感谢大家的参与,得标者请留意工作人员联络。</p>
     <div class="results">${items.map(i => `<div class="res"><b>${esc(i.name)}</b>${i.top==null ? '<small>无人参与</small>' : `<div class="price">${money(i.top)}</div><small>${leadShort(i).replace('得标 ','')}</small>`}</div>`).join('')}</div></section>`;
-  else if (!round || !ris.length) body = `<section class="msg"><h2>爱加倍即将开始</h2><p>今晚共 ${items.length} 件木刻作品,金额高者得。</p></section>`;
+  else if (!round || !ris.length) body = `<section class="msg"><h2>爱加倍即将开始</h2><p>今晚共 ${items.length} 件木刻作品。</p></section>`;
   else body = ris.length === 1 ? single(ris[0]) : multi(ris);
   $('#app').innerHTML = `<header class="bar"><h1>爱加倍</h1><span>金额高者得</span></header>${body}`;
   last = Object.fromEntries(items.map(i => [i.id, i.top]));
@@ -426,137 +464,97 @@ function viewScreen(){
   tick();
 }
 
-/* ===== 手机页 ===== */
-const bidId = () => (location.hash || '').split('/')[2] || '';
-const stTag = {win:'你得标了', lose:'未得标', ahead:'你领先', behind:'已被超越'};
-function myStatus(it){
-  const ids = myBids()[it.id] || []; if (!ids.length) return '';
-  const lead = ids.includes(it.lastBid);
-  return isClosed(it) ? (lead ? 'win' : 'lose') : (lead ? 'ahead' : 'behind');
-}
+/* ===== 手机页:每件各自填金额,也可以只填一个"随机"金额 ===== */
 const wrapMsg = (h, p) => { $('#app').innerHTML = `<div class="wrap wait"><h1>${h}</h1><p>${p}</p></div>`; };
-function viewBid(){
+const meWin = it => { const s = saved(); return it.top != null && s.name && it.who === s.name && String(it.table) === String(s.table) && it.tail === norm(s.phone).slice(-TAIL); };
+function viewBid(notice){
   document.body.className = 'bid';
   viewKey = key();
-  const id = bidId();
   if (finished) return wrapMsg('爱加倍全部结束', '感谢参与。得标者请留意工作人员联络。');
-  if (!round) return wrapMsg('爱加倍还没开始', '主持人宣布开始后,这个页面会自动出现这一轮的物品。');
-  if (id && round.ids.includes(id) && get(id)) return viewBidItem(get(id));
-  viewList();
+  if (!round) return wrapMsg('爱加倍还没开始', '主持人宣布开始后,这个页面会自动出现这一轮的作品。');
+  round.status === 'open' ? viewForm(notice) : viewResult();
 }
-function viewList(){
-  const closed = round.status !== 'open';
+function viewForm(notice){
+  const s = saved(), known = !!(s.name && s.table && s.phone), ris = roundItems(), subs = mySubs();
+  const sent = id => subs[id] ? [subs[id]] : [];
   $('#app').innerHTML = `<div class="wrap">
-    <small class="no">第 ${round.no} 轮,共 ${round.ids.length} 件</small>
-    <h1 class="bt">${closed ? '本轮已结束' : '选择要加倍的物品'}</h1>
-    <p class="sub2">${closed ? '请等待下一轮。' : '点选物品开始加倍,一轮里的物品同时截止。'}</p>
-    ${roundItems().map(it => { const s = myStatus(it); return `
-      <a class="li" href="#/bid/${it.id}">
-        <div class="th ph" style="${bg(it)}">${face(it)}</div>
-        <div class="lm"><b>${esc(it.name)}</b><small>${it.top==null ? '低价 '+money(it.min) : (closed?'最高 ':'目前 ')+money(it.top)}</small></div>
-        ${s ? `<span class="tag ${s}">${stTag[s]}</span>` : '<span>›</span>'}
-      </a>`; }).join('')}</div>`;
-}
-function viewBidItem(it){
-  const s = saved(), known = !!(s.name && s.table && s.phone);
-  $('#app').innerHTML = `
-    <div class="wrap">
-      <a class="back" href="#/bid">‹ 返回本轮清单</a>
-      <div class="hero ph" style="${bg(it)}">${face(it)}${sealOf(it)}</div>
-      <h1 class="bt">${esc(it.name)}</h1>
-      <div class="stat stitch" id="stat">
-        <div><small id="lbl"></small><div class="price" id="top"></div></div>
-        <div class="lead" id="lead"></div>
-      </div>
-      <div id="mine"></div>
-      <div id="closedBox"></div>
-      <div id="formBox">
-        ${known ? `<div class="idsum" id="idsum"><span>你的资料:${esc(s.name)},桌 ${esc(s.table)},${esc(s.phone)}</span><button type="button" id="editid">修改</button></div>` : ''}
-        <div id="idf" ${known ? 'style="display:none"' : ''}>
-          <label>姓名<input id="who" maxlength="30" placeholder="你的姓名" value="${esc(s.name||'')}"></label>
-          <label>桌号<input id="tb" inputmode="numeric" maxlength="3" placeholder="例如 5" value="${esc(s.table||'')}"></label>
-          <label>手机号<input id="phone" type="tel" placeholder="结标后用来联络得标者" value="${esc(s.phone||'')}"></label>
-        </div>
-        <label>爱加倍金额
-          <div class="step">
-            <button type="button" id="minus" aria-label="减少">−</button>
-            <input id="amt" inputmode="numeric" value="${nextMin(it)}">
-            <button type="button" id="plus" aria-label="增加">+</button>
-          </div>
-          <small id="hint"></small>
-        </label>
-        <p class="err" id="err" role="alert"></p>
-        <button class="go" id="go">提交</button>
-        <p class="note">大屏幕会显示你的姓名、桌号和手机尾号 ${TAIL} 位,完整手机号只用于结标后联络。</p>
-      </div>
-    </div>`;
-  const amt = $('#amt');
-  const bump = d => { const v = parseInt(amt.value,10) || nextMin(it); amt.value = Math.max(nextMin(get(it.id)), v + d*it.inc); };
-  $('#minus').onclick = () => bump(-1);
-  $('#plus').onclick = () => bump(1);
-  $('#go').onclick = () => submit(it.id);
+    <small class="no">第 ${round.no} 轮,共 ${ris.length} 件</small>
+    <h1 class="bt">填写您的爱加倍金额</h1>
+    <p class="sub2">想要哪一件,就在那一件后面填金额;可以填好几件,不想要的留空。时间结束前可以随时修改。</p>
+    ${notice ? `<div class="okb">${notice}</div>` : ''}
+    ${known ? `<div class="idsum" id="idsum"><span>你的资料:${esc(s.name)},桌 ${esc(s.table)},${esc(s.phone)}</span><button type="button" id="editid">修改</button></div>` : ''}
+    <div id="idf" ${known ? 'style="display:none"' : ''}>
+      <label>姓名<input id="who" maxlength="30" placeholder="你的姓名" value="${esc(s.name||'')}"></label>
+      <label>桌号<input id="tb" inputmode="numeric" maxlength="3" placeholder="例如 5" value="${esc(s.table||'')}"></label>
+      <label>手机号<input id="phone" type="tel" placeholder="结束后用来联络得标者" value="${esc(s.phone||'')}"></label>
+    </div>
+    ${ris.map(it => `<div class="ic">
+      <div class="th ph" style="${bg(it)}">${face(it)}</div>
+      <div class="lm"><b>${esc(it.name)}</b><small>低价 ${money(it.min)}</small>${sent(it.id).length ? `<small class="sent">当前已提交 ${sent(it.id).map(money).join('、')}</small>` : ''}</div>
+      <input class="amt2" data-item="${it.id}" inputmode="numeric" placeholder="金额" value="${subs[it.id]||''}" aria-label="${esc(it.name)}的金额"></div>`).join('')}
+    ${ris.length > 1 ? `<div class="ic any">
+      <div class="lm"><b>随机一件</b><small>每一件都有兴趣?只填一个金额,系统最多给你其中一件</small>${sent('*').length ? `<small class="sent">当前已提交 ${sent('*').map(money).join('、')}</small>` : ''}</div>
+      <input class="amt2" data-item="*" inputmode="numeric" placeholder="金额" value="${subs['*']||''}" aria-label="随机金额"></div>` : ''}
+    <p class="err" id="err" role="alert"></p>
+    <button class="go" id="go">提交</button>
+    <p class="note">提交后大屏幕不会变化,时间结束后会一起公布最高金额和得主。得标时,大屏幕会显示你的姓名、桌号和手机尾号 ${TAIL} 位;完整手机号只用于结束后联络。时间结束前可以修改:改好金额再按提交;清空某一件的金额再提交,就是取消这一件。以你最后一次提交为准。</p>
+  </div>`;
   if ($('#editid')) $('#editid').onclick = () => { $('#idf').style.display = ''; $('#idsum').style.display = 'none'; };
-  liveBid(it.id);
+  $('#go').onclick = submit;
 }
-function liveBid(id){
-  const it = get(id), top = $('#top');
-  if (!it || !top) return;
-  const changed = top.textContent && top.textContent !== money(it.top ?? it.min);
-  $('#lbl').textContent = priceLabel(it);
-  top.textContent = money(it.top ?? it.min);
-  $('#lead').innerHTML = leadHtml(it);
-  $('#lead').className = 'lead' + (it.top==null?' none':'');
-  $('#hint').textContent = `最低金额 ${money(nextMin(it))},每次加 ${money(it.inc)}`;
-  const closed = isClosed(it);
-  if (changed && !closed){
-    const st = $('#stat'); st.classList.remove('pulse'); void st.offsetWidth; st.classList.add('pulse');
-    const a = $('#amt');
-    if (a && (parseInt(a.value,10)||0) < nextMin(it)){
-      a.value = nextMin(it);
-      $('#err').textContent = `有人刚刚更新了金额,最低金额已更新为 ${money(nextMin(it))}。`;
-    }
-  }
-  const m = $('#mine'), st = myStatus(it);
-  const txt = {ahead:'你目前领先', behind:'你已被超越,可以再次提交', win:'恭喜,这一件由你得标。', lose:'这一件已结束,你没有得标。'};
-  m.className = st ? 'mine ' + (st==='ahead'||st==='win' ? 'lead-ok' : 'out') : '';
-  m.textContent = st ? txt[st] : '';
-  $('#formBox').style.display = closed ? 'none' : '';
-  $('#closedBox').innerHTML = closed ? '<div class="closed">本轮爱加倍已结束。</div>' : '';
-}
-function submit(id){
-  const it = get(id);
+function submit(){
   const err = m => { $('#err').textContent = m; };
   const showId = () => { $('#idf').style.display = ''; if ($('#idsum')) $('#idsum').style.display = 'none'; };
-  const n = $('#who').value.trim(), t = $('#tb').value.trim(), p = $('#phone').value.trim(), a = parseInt($('#amt').value,10);
+  const n = $('#who').value.trim(), t = $('#tb').value.trim(), p = $('#phone').value.trim();
+  const ris = roundItems(), subs = mySubs(), entries = [];
+  for (const el of document.querySelectorAll('.amt2')){
+    const id = el.dataset.item, raw = el.value.trim(), prev = subs[id];
+    if (!raw){ if (prev) entries.push({item:id, amount:0, prev}); continue; }          // 清空 = 取消这一件
+    const a = parseInt(raw.replace(/[^\d]/g, ''), 10);
+    if (!a) return err('请检查金额,只填数字。');
+    const need = id === '*' ? Math.min(...ris.map(i => i.min)) : (get(id) || {}).min;
+    if (a < need) return err(`${id === '*' ? '随机金额' : get(id).name + '的金额'}不能低于低价 ${money(need)}。`);
+    if (a !== prev) entries.push({item:id, amount:a, prev});
+  }
+  if (!entries.length) return err(Object.keys(subs).length ? '没有需要更新的内容。要修改,请先改金额再提交。' : '请至少填写一个金额。');
   if (!n){ showId(); return err('请填写姓名。'); }
   if (!/^\d{1,3}$/.test(t)){ showId(); return err('请填写桌号,只填数字,例如 5。'); }
   if (norm(p).length < 8){ showId(); return err('手机号格式不对,请检查后再提交。'); }
-  if (!a) return err('请填写爱加倍金额。');
-  if (a < nextMin(it)) return err(it.top==null ? `金额不能低于低价 ${money(it.min)}。` : `最低金额是 ${money(nextMin(it))}。`);
   err('');
+  const label = e => e.item === '*' ? '随机一件' : esc(get(e.item).name);
   const m = document.createElement('div');
   m.className = 'modal';
   m.innerHTML = `<div class="box" role="dialog" aria-modal="true">
-      <h3>确认提交</h3><p>${esc(it.name)}</p><p>${esc(n)},桌 ${esc(t)},手机 ${esc(p)}</p>
-      <div class="price">${money(a)}</div>
-      <button class="btn" id="ok">确认提交</button>
+      <h3>${entries.some(e => e.prev) ? '确认更改' : '确认提交'}</h3><p>${esc(n)},桌 ${esc(t)},手机 ${esc(p)}</p>
+      <div style="text-align:left;margin:.8rem 0">${entries.map(e => `<p style="color:var(--paper)">${label(e)}:${e.prev ? money(e.prev) + ' → ' : ''}<b>${e.amount > 0 ? money(e.amount) : '取消'}</b></p>`).join('')}</div>
+      <button class="btn" id="ok">确认</button>
       <button class="btn ghost" id="cancel">返回修改</button></div>`;
   document.body.appendChild(m);
   $('#cancel').onclick = () => m.remove();
   $('#ok').onclick = async () => {
     $('#ok').disabled = true; $('#ok').textContent = '提交中…';
-    const r = await placeBid(it.id, t, a, p, 'guest', n);
+    const r = await submitBids(entries.map(e => ({item:e.item, amount:e.amount})), t, p, 'guest', n);
     m.remove();
-    if (!r.ok){ liveBid(it.id); return err(r.msg); }
-    save(t, p, n); remember(it.id, r.bidId);
-    $('#amt').value = nextMin(get(it.id));
-    liveBid(it.id);
+    if (!r.ok) return err(r.msg);
+    save(t, p, n); remember(entries);
+    viewForm('已提交,谢谢!时间结束前还可以修改,或继续填其他作品。');
   };
+}
+function viewResult(){
+  const ris = roundItems();
+  if (!round.resolved) return wrapMsg('时间到', '正在统计结果,请看大屏幕。');
+  const subs = mySubs(), wins = ris.filter(meWin);
+  $('#app').innerHTML = `<div class="wrap">
+    <small class="no">第 ${round.no} 轮已结束</small>
+    <h1 class="bt">结果</h1>
+    ${Object.keys(subs).length ? `<div class="${wins.length ? 'okb' : 'mine out'}">${wins.length ? '恭喜,你得标了:' + wins.map(i => esc(i.name)).join('、') : '这一轮你没有得标,谢谢参与。'}</div>` : ''}
+    ${ris.map(it => `<div class="res2"><b>${esc(it.name)}</b><br><small>${it.top == null ? '无人参与' : '最高金额 ' + money(it.top) + ',' + leadShort(it).replace('得标 ','')}</small></div>`).join('')}
+    <p class="note">请等待下一轮。</p></div>`;
 }
 
 /* ===== 管理页 ===== */
 const clock = t => { const d = new Date(t); return pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()); };
-const itemName = id => (items.find(i => i.id === id) || {}).name || '';
+const itemName = id => id === '*' ? '随机一件' : (items.find(i => i.id === id) || {}).name || '';
 const stText = it => isClosed(it) ? '已结束' : it.status === 'open' ? '进行中' : '未开始';
 
 function viewAdmin(){
@@ -589,8 +587,8 @@ function renderTab(){
         <input id="dur" inputmode="decimal" value="${durMin}"></label>
         <small>下次点"开始本轮"或"重新开放"时生效。</small></div>
       <div class="panel"><b>代录入(纸本)</b>
-        <div class="row2"><label>物品<select id="pi"></select></label>
-          <label>姓名(可不填)<input id="pn"></label>
+        <div class="row2"><label>作品<select id="pi"></select></label>
+          <label>姓名<input id="pn"></label>
           <label>桌号<input id="pt" inputmode="numeric"></label>
           <label>手机号(可不填)<input id="pp" type="tel"></label>
           <label>金额<input id="pa" inputmode="numeric"></label>
@@ -609,8 +607,8 @@ function adminRefresh(){
     const m = $('#miniLog'); if (m) m.innerHTML = logTable(bids.slice(-8).reverse());
     const pi = $('#pi');
     if (pi){ const v = pi.value, o = round && round.status==='open' ? roundItems() : [];
-      pi.innerHTML = o.map(i => `<option value="${i.id}">${esc(i.name)}</option>`).join('');
-      if (o.some(i => i.id === v)) pi.value = v; }
+      pi.innerHTML = o.map(i => `<option value="${i.id}">${esc(i.name)}</option>`).join('') + (o.length > 1 ? '<option value="*">随机一件</option>' : '');
+      if (v && [...pi.options].some(x => x.value === v)) pi.value = v; }
   }
   if (tab === 'log' && $('#logBox')) $('#logBox').innerHTML = logTable(bids.slice().reverse());
   if (tab === 'res') renderRes();
@@ -619,13 +617,21 @@ function adminRefresh(){
 function selHtml(){
   const pend = items.filter(i => i.status === 'pending');
   if (!items.length) return '<p><small>还没有物品。请到"物品管理"点"载入物品清单",或新增物品。</small></p>';
-  if (!pend.length) return '<p><small>没有待拍的物品了,可以点"结束全场"。</small></p>';
+  if (!pend.length) return '<p><small>没有待开始的物品了,可以点"结束全场"。</small></p>';
   const n = sel.filter(id => pend.some(p => p.id === id)).length;
-  return `<div class="sel"><b>选择下一轮要拍的物品(最多 ${MAXROUND} 件)</b>
+  return `<div class="sel"><b>选择下一轮要开放的作品(最多 ${MAXROUND} 件)</b>
     <div class="chk">${pend.map(i => `<label class="c"><input type="checkbox" data-sel="${i.id}" ${sel.includes(i.id)?'checked':''}>${esc(i.name)}<small>&nbsp;低价 ${money(i.min)}</small></label>`).join('')}</div>
     <div class="btns"><button class="b" data-act="startRound" ${n && n<=MAXROUND ? '' : 'disabled'}>开始本轮(已选 ${n} 件)</button>
       <button class="b line" data-act="selAll">全选</button><button class="b line" data-act="selNone">清空</button></div>
     ${n > MAXROUND ? '<p class="err">一轮最多 '+MAXROUND+' 件,请取消几件。</p>' : ''}</div>`;
+}
+function liveRows(){
+  const mine = bids.filter(b => b.round === round.no && !b.void);
+  const prov = round.resolved ? null : resolveRound(round.ids, mine), eff = effective(mine);
+  return round.ids.map(get).filter(Boolean).map(it => {
+    const w = round.resolved ? (it.top == null ? null : {amount:it.top, who:it.who, table:it.table}) : prov[it.id];
+    return `<tr><td>${esc(it.name)}</td><td>低价 ${money(it.min)}</td><td>${eff.filter(b => b.item === it.id).length} 人</td><td>${w ? money(w.amount) + ',' + esc(w.who||'') + ',桌 ' + w.table : '无'}</td></tr>`;
+  }).join('') + `<tr><td colspan="4"><small>随机金额 ${eff.filter(b => b.item === '*').length} 人。同一个人只算最后一次提交。${round.resolved ? '以上是已经公布的结果。' : '最后一列是暂列的结果,只有管理页看得到,大屏和手机都看不到。'}</small></td></tr>`;
 }
 function renderLive(){
   const box = $('#liveStatus'); if (!box) return;
@@ -634,23 +640,25 @@ function renderLive(){
   if (finished) h = '<b>全场已结束</b>';
   else {
     h = round
-      ? `<div class="st"><b class="nm">第 ${round.no} 轮,共 ${round.ids.length} 件,${open?'进行中':'已结束'}</b><div class="bignum" id="admCd"></div></div>
-         <table class="t"><tbody>${roundItems().map(it => `<tr><td>${esc(it.name)}</td><td>${money(it.top ?? it.min)}</td><td>${it.top==null?'无人参与':(it.bidder ? it.bidder+',' : '')+'桌 '+it.table+',尾号 '+(tailOf(it)||'—')}</td></tr>`).join('')}</tbody></table>`
+      ? `<div class="st"><b class="nm">第 ${round.no} 轮,共 ${round.ids.length} 件,${open?'进行中':round.resolved?'已结束,结果已公布':'时间到,统计中'}</b><div class="bignum" id="admCd"></div></div>
+         <table class="t"><thead><tr><th>作品</th><th>低价</th><th>提交数</th><th>${round.resolved?'最高金额和得主':'暂列最高(仅管理页可见)'}</th></tr></thead><tbody>${liveRows()}</tbody></table>`
       : '<b>爱加倍尚未开始</b>';
-    if (open) btn = '<button class="b line" data-act="ext" data-s="30">+30 秒</button><button class="b line" data-act="ext" data-s="60">+1 分钟</button><button class="b red" data-act="end">结束本轮</button>';
-    else { if (round) btn += '<button class="b line" data-act="reopen">重新开放本轮</button>'; btn += '<button class="b line" data-act="finish">结束全场</button>'; }
+    if (open) btn = '<button class="b line" data-act="ext" data-s="30">+30 秒</button><button class="b line" data-act="ext" data-s="60">+1 分钟</button><button class="b red" data-act="end">结束并公布结果</button>';
+    else {
+      if (round) btn += `<button class="b ${round.resolved?'line':''}" data-act="publish">${round.resolved?'重新计算并公布':'公布结果'}</button><button class="b line" data-act="reopen">重新开放本轮</button>`;
+      btn += '<button class="b line" data-act="finish">结束全场</button>';
+    }
   }
   box.innerHTML = h + `<div class="btns">${btn}</div>` + (!finished && !open ? selHtml() : '');
 }
 const logTable = list => !list.length ? '<small>还没有记录。</small>' :
-  `<table class="t"><thead><tr><th>时间</th><th>物品</th><th>姓名</th><th>桌号</th><th>金额</th><th>手机号</th><th>来源</th><th></th></tr></thead><tbody>${list.map(b =>
-  `<tr class="${b.void?'void':''}"><td>${clock(b.time)}</td><td>${esc(itemName(b.item))}</td><td>${esc(b.who||'')}</td><td>${b.table}</td><td>${money(b.amount)}</td><td>${esc(b.phone)}</td><td>${b.source==='staff'?'工作人员':'宾客'}</td><td><button class="b line" data-act="void" data-id="${b.id}">${b.void?'恢复':'作废'}</button></td></tr>`).join('')}</tbody></table>`;
+  `<table class="t"><thead><tr><th>时间</th><th>作品</th><th>姓名</th><th>桌号</th><th>金额</th><th>手机号</th><th>来源</th><th></th></tr></thead><tbody>${list.map(b =>
+  `<tr class="${b.void?'void':''}"><td>${clock(b.time)}</td><td>${esc(itemName(b.item))}</td><td>${esc(b.who||'')}</td><td>${b.table}</td><td>${b.amount > 0 ? money(b.amount) : '取消'}</td><td>${esc(b.phone)}</td><td>${b.source==='staff'?'工作人员':'宾客'}</td><td><button class="b line" data-act="void" data-id="${b.id}">${b.void?'恢复':'作废'}</button></td></tr>`).join('')}</tbody></table>`;
 function itemsHtml(){
-  return `<div class="panel"><table class="t"><thead><tr><th>#</th><th>名称</th><th>低价</th><th>每次至少加</th><th>照片路径</th><th>状态</th><th></th></tr></thead><tbody>
+  return `<div class="panel"><table class="t"><thead><tr><th>#</th><th>名称</th><th>低价</th><th>照片路径</th><th>状态</th><th></th></tr></thead><tbody>
   ${items.map((it,i) => { const p = it.status === 'pending', d = p ? '' : 'disabled'; return `<tr><td>${i+1}</td>
     <td><input data-f="name" data-i="${i}" value="${esc(it.name)}" ${d}></td>
     <td><input class="num" data-f="min" data-i="${i}" inputmode="numeric" value="${it.min}" ${d}></td>
-    <td><input class="num" data-f="inc" data-i="${i}" inputmode="numeric" value="${it.inc}" ${d}></td>
     <td><input data-f="photo" data-i="${i}" placeholder="photos/fu.jpg" value="${esc(it.photo)}" ${d}></td>
     <td>${stText(it)}</td>
     <td class="nw">${p ? `<button class="b line" data-act="mv" data-i="${i}" data-d="-1">↑</button><button class="b line" data-act="mv" data-i="${i}" data-d="1">↓</button><button class="b line" data-act="del" data-i="${i}">删除</button>` : ''}</td></tr>`; }).join('')}
@@ -691,7 +699,7 @@ async function act(a, d){
     if (a === 'tab'){ tab = d.k; return viewAdmin(); }
     if (a === 'csv') return download([['物品','状态','最高金额','得标人','得标桌号','手机号'], ...items.map(i => [i.name, stText(i), i.top ?? '', i.bidder || '', i.top==null ? '' : i.table, txt(i.phone)])], 'results.csv');
     if (a === 'csv2') return download([['姓名','手机号','桌号','得标物品','应付合计'], ...people().map(o => [o.who, txt(o.phone), [...o.tables].join('、'), o.list.join(';'), o.sum])], 'by-person.csv');
-    if (a === 'csv3') return download([['时间','物品','姓名','桌号','金额','手机号','来源','是否作废'], ...bids.map(b => [new Date(b.time).toLocaleString(), itemName(b.item), b.who || '', b.table, b.amount, txt(b.phone), b.source==='staff'?'工作人员':'宾客', b.void?'是':''])], 'all-bids.csv');
+    if (a === 'csv3') return download([['时间','作品','姓名','桌号','金额','手机号','来源','是否作废'], ...bids.map(b => [new Date(b.time).toLocaleString(), itemName(b.item), b.who || '', b.table, b.amount > 0 ? b.amount : '取消', txt(b.phone), b.source==='staff'?'工作人员':'宾客', b.void?'是':''])], 'all-bids.csv');
     if (a === 'selAll') sel = items.filter(i => i.status === 'pending').slice(0, MAXROUND).map(i => i.id);
     if (a === 'selNone') sel = [];
     if (a === 'startRound' && sel.length <= MAXROUND) await startRound(sel);
@@ -699,20 +707,21 @@ async function act(a, d){
       if (R.durMs > 0) await roundRef().update({extraMs:FV().increment(+d.s*1000)});
       else await roundRef().update({startedAt:FV().serverTimestamp(), durMs:+d.s*1000, extraMs:0});
     }
-    if (a === 'end') await closeRound();
+    if (a === 'end' && open){ closing = true; autoNo = round.no; try { await closeRound(); } finally { closing = false; } }
+    if (a === 'publish' && round && !open){ closing = true; autoNo = round.no; try { if (round.dbStatus === 'open') await roundRef().update({status:'closed'}); await publishResults(round.no); } finally { closing = false; } }
     if (a === 'reopen') await reopenRound();
     if (a === 'finish' && !open) await roundRef().set({finished:true}, {merge:true});
     if (a === 'void') await setVoid(d.id, !(bids.find(b => b.id === d.id) || {}).void);
     if (a === 'proxy'){
       const e = $('#pErr'), t = $('#pt').value.trim(), p = $('#pp').value.trim(), v = parseInt($('#pa').value,10), id = $('#pi').value;
-      if (!id){ e.textContent = '现在没有进行中的物品。'; return; }
+      if (!id){ e.textContent = '现在没有进行中的作品。'; return; }
       if (!/^\d{1,3}$/.test(t)){ e.textContent = '请填写桌号(数字)。'; return; }
       if (!v){ e.textContent = '请填写金额。'; return; }
-      const r = await placeBid(id, t, v, p || '纸本', 'staff', $('#pn').value.trim());
+      const r = await submitBids([{item:id, amount:v}], t, p || '纸本', 'staff', $('#pn').value.trim());
       e.textContent = r.ok ? '' : r.msg;
       if (r.ok){ $('#pn').value = ''; $('#pt').value = ''; $('#pp').value = ''; $('#pa').value = ''; }
     }
-    if (a === 'add') await col('items').doc().set({name:'新物品', emoji:'新', c1:'#d8b27a', c2:'#b98a52', min:100, inc:10, photo:'', order:items.reduce((m,i) => Math.max(m, i.order||0), 0) + 1, ...BLANK});
+    if (a === 'add') await col('items').doc().set({name:'新物品', emoji:'新', c1:'#d8b27a', c2:'#b98a52', min:100, photo:'', order:items.reduce((m,i) => Math.max(m, i.order||0), 0) + 1, ...BLANK});
     if (a === 'del') await itemRef(items[+d.i].id).delete();
     if (a === 'mv'){
       const x = items[+d.i], y = items[+d.i + +d.d];
@@ -732,7 +741,7 @@ $('#app').addEventListener('change', e => {
   if (t.dataset.sel){ sel = t.checked ? [...sel, t.dataset.sel] : sel.filter(x => x !== t.dataset.sel); renderLive(); }
   if (t.dataset.f){
     const x = items[+t.dataset.i], f = t.dataset.f;
-    const v = f === 'min' ? Math.max(0, parseInt(t.value,10) || 0) : f === 'inc' ? Math.max(1, parseInt(t.value,10) || 1) : t.value.trim();
+    const v = f === 'min' ? Math.max(0, parseInt(t.value,10) || 0) : t.value.trim();
     itemRef(x.id).update({[f]:v}).catch(err => alert('保存失败:' + (err.code || err.message)));
   }
 });
@@ -748,12 +757,7 @@ function route(){
 }
 function refresh(){
   if (isAdmin()) return user ? adminRefresh() : undefined;
-  if (isBid()){
-    if (key() !== viewKey) return viewBid();
-    const id = bidId();
-    if (round && !finished) return id && round.ids.includes(id) ? liveBid(id) : viewList();
-    return;
-  }
+  if (isBid()) return key() !== viewKey ? viewBid() : undefined;   // 开放期间数据不会变,不用重画,以免打断填写
   viewScreen();
 }
 function cdInfo(){
@@ -765,7 +769,12 @@ function cdInfo(){
 }
 function tick(){
   if (round && round.status === 'open' && round.endAt && Date.now() >= round.endAt){ round.status = 'closed'; refresh(); }
-  if (user && round && round.dbStatus === 'open' && round.status === 'closed' && !closing){ closing = true; closeRound().catch(() => {}).finally(() => { closing = false; }); }
+  if (user && round && !closing && autoNo !== round.no && round.status === 'closed' && !round.resolved){   // 管理页开着时,时间一到自动公布结果
+    autoNo = round.no; closing = true;
+    (round.dbStatus === 'open' ? closeRound() : publishResults(round.no))
+      .catch(() => alert('自动公布结果没有成功,请到现场控制点"公布结果"。'))
+      .finally(() => { closing = false; });
+  }
   const c = cdInfo(); if (!c) return;
   const [l, t, urgent] = c;
   const cd = $('#cd'); if (cd){ cd.textContent = t; $('#cdLbl').textContent = l; $('#cdBox').classList.toggle('end', urgent); }
@@ -774,7 +783,7 @@ function tick(){
 
 /* ===== 启动 ===== */
 if (!configured){
-  $('#app').innerHTML = '<div class="wrap wait"><h1>还没有填写 Firebase 设置</h1><p>请把 firebaseConfig 粘贴到文件开头的设置区,再重新打开。</p></div>';
+  $('#app').innerHTML = '<div class="wrap wait"><h1>还没有填写 Firebase 设置</h1><p>请在 config.js 里填入 firebaseConfig。</p></div>';
 } else if (typeof firebase === 'undefined'){
   $('#app').innerHTML = '<div class="wrap wait"><h1>无法加载 Firebase</h1><p>请检查网络后刷新页面。</p></div>';
 } else {
