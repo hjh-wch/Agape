@@ -217,14 +217,14 @@ select{width:100%;font:inherit;font-size:1.05rem;padding:.7rem;margin-top:.35rem
    第 1 步:把 Firebase 控制台里的 firebaseConfig 粘贴到下面,
    替换掉 { } 里面的内容(保留前后的 const firebaseConfig = 和分号)
    ============================================================ */
-const firebaseConfig = {
-  apiKey: "粘贴这里",
-  authDomain: "粘贴这里",
-  projectId: "粘贴这里",
-  storageBucket: "粘贴这里",
-  messagingSenderId: "粘贴这里",
-  appId: "粘贴这里"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyBV1iHktFWtZW3wrYcDJ6zmt4YKSMC9kVc",
+    authDomain: "agape-mega.firebaseapp.com",
+    projectId: "agape-mega",
+    storageBucket: "agape-mega.firebasestorage.app",
+    messagingSenderId: "212589354348",
+    appId: "1:212589354348:web:e69ce9871018c2d317e749"
+  };
 
 /* ===== 其他设置 ===== */
 const CUR = 'RM ', TAIL = 3, MAXROUND = 10;      // 币种、大屏显示手机尾号位数、一轮最多件数
@@ -233,8 +233,6 @@ const money = n => CUR + Number(n).toLocaleString('en-US');
 const DEMO = [
   {name:'「福」字木雕牌匾',   emoji:'福', c1:'#d8b27a', c2:'#b98a52', min:200, inc:20},
   {name:'「家和万事兴」匾额', emoji:'和', c1:'#c9a068', c2:'#a77a47', min:300, inc:20},
-  {name:'鲤鱼戏莲木雕摆件',   emoji:'鲤', c1:'#deba84', c2:'#c0955c', min:150, inc:10},
-  {name:'观音木雕像',         emoji:'观', c1:'#cfa571', c2:'#b08350', min:250, inc:20},
   {name:'双龙戏珠木刻挂板',   emoji:'龙', c1:'#c59a63', c2:'#a5753f', min:200, inc:20},
   {name:'梅兰竹菊木刻屏风',   emoji:'梅', c1:'#d6ae78', c2:'#b98d55', min:350, inc:30},
   {name:'马到成功木雕摆件',   emoji:'马', c1:'#d3ab72', c2:'#b58650', min:180, inc:20},
