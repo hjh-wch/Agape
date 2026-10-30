@@ -27,14 +27,12 @@ a{color:inherit;text-decoration:none}
 small{color:var(--muted);font-size:.9rem}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 
-/* 预览工具条:正式版会删除 */
 .dev{background:#3a2314;border-bottom:1px solid var(--line);padding:.5rem .8rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;font-size:.8rem}
 .dev b{color:#cdb691;font-weight:400;margin-right:auto}
 .dev a,.dev button{background:transparent;color:#f6ecd6;border:1px solid #7a5a3a;border-radius:6px;padding:.3rem .7rem;font:inherit;cursor:pointer}
 .dev a:hover,.dev button:hover{border-color:#f0c878;color:#f0c878}
 .dev button:disabled{opacity:.4;cursor:default}
 
-/* 雕刻边框:双层刻线,像牌匾四周的凹槽。这是本页唯一的装饰 */
 .stitch{position:relative;background:var(--card) repeating-linear-gradient(88deg,rgba(150,100,40,.07) 0 1px,transparent 1px 11px);border-radius:6px;box-shadow:0 0 0 2px #b4935c,0 8px 22px rgba(90,60,20,.2),inset 0 1px 0 rgba(255,255,255,.7)}
 .stitch::before,.stitch::after{content:"";position:absolute;pointer-events:none}
 .stitch::before{inset:7px;border:1px solid var(--line);border-radius:3px}
@@ -47,7 +45,7 @@ small{color:var(--muted);font-size:.9rem}
 @keyframes pop{0%{transform:scale(1);text-shadow:none}30%{transform:scale(1.12);color:#f2b100;text-shadow:0 0 .35em rgba(255,200,30,.95),0 0 .9em rgba(255,190,0,.6)}100%{transform:scale(1);text-shadow:none}}
 @keyframes glow{0%,40%{border-color:#f2b100;box-shadow:0 0 14px rgba(255,190,0,.8)}100%{border-color:var(--line);box-shadow:none}}
 
-/* ---------- 大屏:一次一件 ---------- */
+/* Main Screen */
 .bar{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 3vw .6rem}
 .bar h1{font-family:var(--brush);font-weight:400;letter-spacing:.1em;font-size:clamp(1.8rem,3vw,2.8rem);margin:0}
 .bar span{color:var(--muted);font-size:clamp(1rem,1.5vw,1.3rem)}
@@ -87,7 +85,7 @@ small{color:var(--muted);font-size:.9rem}
 .seal{position:absolute;right:5%;bottom:6%;font-family:var(--brush);font-size:clamp(2rem,4.5vw,4.2rem);line-height:1.1;color:#f6e9d0;background:var(--seal);border-radius:4px;padding:.08em .3em .14em;letter-spacing:.06em;outline:2px solid rgba(246,233,208,.45);outline-offset:-.14em;transform:rotate(-7deg);text-shadow:none}
 .hero .seal{font-size:2.2rem}
 
-/* ---------- 手机页 ---------- */
+/* Phone Scene */
 .wrap{max-width:480px;margin:0 auto;padding:1.2rem 1.2rem 3rem}
 .no{display:block;margin-bottom:.6rem}
 .hero{position:relative;overflow:hidden;height:210px;border-radius:4px;font-size:5rem;margin-bottom:1rem}
@@ -130,7 +128,7 @@ input:focus{border-color:var(--gold);outline:none}
   .big{min-height:180px;font-size:7rem}
 }
 
-/* ---------- 管理页 ---------- */
+/* Admin Page */
 .adm{max-width:1100px;margin:0 auto;padding:1rem 1.2rem 3rem}
 .tabs{display:flex;gap:.4rem;margin:.8rem 0 1rem;border-bottom:2px solid var(--line)}
 .tabs button{padding:.6rem 1.1rem;border:0;background:transparent;font:inherit;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
@@ -157,8 +155,8 @@ table.t{width:100%;border-collapse:collapse;font-size:.95rem}
 tr.void td{text-decoration:line-through;color:var(--muted)}
 
 
-/* ---------- 一轮多件:大屏卡片 ---------- */
-.stage .stitch.m{grid-template-columns:1fr clamp(240px,19vw,360px);gap:2vw}
+/* ItemCard when more thn one */
+.stage .stitch.m{grid-template-columns:1fr clamp(230px,17vw,330px);gap:1.6vw}
 .cards{display:grid;gap:1.1vw;min-width:0;position:relative;z-index:1}
 .mc{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;font-size:var(--fs);background:rgba(255,255,255,.4);border:1px solid var(--line);border-radius:6px;padding:.7em;position:relative}
 .mp{position:relative;flex:1;min-height:60px;border-radius:4px;font-size:4.2em;margin-bottom:.5em}
@@ -180,7 +178,7 @@ tr.void td{text-decoration:line-through;color:var(--muted)}
   .cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:none!important}
   .mp{flex:none;height:110px}
 }
-/* ---------- 手机:本轮清单 ---------- */
+/* Item List in phone scene */
 .back{display:inline-block;color:var(--muted);padding:.3rem 0 .8rem}
 .sub2{color:var(--muted);margin:0 0 1rem}
 .li{display:flex;align-items:center;gap:1rem;padding:.7rem;margin-bottom:.7rem;background:var(--card);border-radius:10px;border:1px solid var(--line)}
@@ -205,7 +203,7 @@ select{width:100%;font:inherit;font-size:1.05rem;padding:.7rem;margin-top:.35rem
 .nav{display:flex;gap:.6rem;flex-wrap:wrap;margin:.6rem 0}
 .nav a{display:inline-block;text-decoration:none}
 
-/* ---------- 各自提交金额的表单 ---------- */
+/* Submission */
 .ic{display:flex;align-items:center;gap:.8rem;padding:.7rem;margin-bottom:.7rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
 .ic .lm small{display:block}
 .ic input{width:7.5rem;flex:none;margin:0;text-align:center;font-weight:700}
@@ -215,42 +213,58 @@ select{width:100%;font:inherit;font-size:1.05rem;padding:.7rem;margin-top:.35rem
 .res2{padding:.8rem;margin-bottom:.7rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
 .res2 b{font-family:var(--serif)}
 
+
+/* Image size  */
+.mc{padding:.55em}
+.mp{margin-bottom:.4em}
+.mc h3{font-size:1.15em;margin:0}
+.mc .price{font-size:2.3em}
+.mc .tx{min-width:0}
+.mc.h{flex-direction:row;gap:.8em;align-items:stretch}
+.mc.h .mp{flex:1.55;margin:0;min-height:0}
+.mc.h .tx{flex:1;display:flex;flex-direction:column;justify-content:center}
+.mc.h .price{font-size:1.9em}
+.ic .th{width:84px;height:60px;cursor:zoom-in}
+/* Image preview in phone scene */
+.lb{position:fixed;inset:0;z-index:20;background:rgba(20,10,5,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;touch-action:pinch-zoom}
+.lbp{position:relative;width:min(94vw,640px);height:min(62vh,420px);border-radius:6px;font-size:8rem;box-shadow:inset 0 0 40px rgba(60,30,5,.3)}
+.lbp img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.lb p{color:#f8f0dd;font-family:var(--serif);font-size:1.25rem;margin:.9rem 0 .1rem;text-align:center}
+.lb small{color:#cdb691}
+.lbx{position:absolute;top:.6rem;right:.8rem;border:0;background:transparent;color:#f8f0dd;font-size:2.4rem;line-height:1;padding:.2rem .6rem;cursor:pointer}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
 <body>
 
-<!-- 预览工具条:只是为了现在看效果,正式版会删除(这些功能会放进管理页) -->
 
 <div id="app"></div>
 
 <script>
-/* Firebase 设置在同一个文件夹的 config.js 里,更新网页时不用再改这里 */
 const configured = typeof firebaseConfig !== 'undefined' && !/粘贴/.test(JSON.stringify(firebaseConfig));
 
-/* ===== 其他设置 ===== */
-const CUR = 'RM ', TAIL = 3, MAXROUND = 10;      // 币种、大屏显示手机尾号位数、一轮最多件数
+const CUR = 'RM ', TAIL = 3, MAXROUND = 10;
 const money = n => CUR + Number(n).toLocaleString('en-US');
 const DEMO = [
   {name:'「福」字木雕牌匾',   emoji:'福', c1:'#d8b27a', c2:'#b98a52', min:200, photo:''},
   {name:'「家和万事兴」匾额', emoji:'和', c1:'#c9a068', c2:'#a77a47', min:300, photo:''},
-  {name:'鲤鱼戏莲木雕摆件',   emoji:'鲤', c1:'#deba84', c2:'#c0955c', min:150, photo:''},
-  {name:'观音木雕像',         emoji:'观', c1:'#cfa571', c2:'#b08350', min:250, photo:''},
-  {name:'双龙戏珠木刻挂板',   emoji:'龙', c1:'#c59a63', c2:'#a5753f', min:200, photo:''},
-  {name:'梅兰竹菊木刻屏风',   emoji:'梅', c1:'#d6ae78', c2:'#b98d55', min:350, photo:''},
+  {name:'木刻挂板',   emoji:'龙', c1:'#c59a63', c2:'#a5753f', min:200, photo:''},
+  {name:'木刻屏风',   emoji:'梅', c1:'#d6ae78', c2:'#b98d55', min:350, photo:''},
   {name:'马到成功木雕摆件',   emoji:'马', c1:'#d3ab72', c2:'#b58650', min:180, photo:''},
-  {name:'莲花木雕灯座',       emoji:'莲', c1:'#cda468', c2:'#ad7d48', min:120, photo:''},
+  {name:'木雕灯座',       emoji:'莲', c1:'#cda468', c2:'#ad7d48', min:120, photo:''},
   {name:'「寿」字木雕寿匾',   emoji:'寿', c1:'#dab67e', c2:'#bb8f58', min:260, photo:''},
-  {name:'竹节木刻笔筒',       emoji:'竹', c1:'#d0a96f', c2:'#b2824c', min:90,  photo:''},
+  {name:'木刻笔筒', emoji:'竹', c1:'#d0a96f', c2:'#b2824c', min:90,  photo:''},
 ];
 const BLANK = {status:'pending', top:null, table:null, tail:'', who:'', lastBid:null, roundNo:null};
 const IDLE = {no:0, ids:[], status:'idle', finished:false, resolved:false, startedAt:null, durMs:0, extraMs:0};
 
-/* ===== 状态(全部来自数据库) ===== */
 let db, auth, user = null;
 let items = [], R = null, round = null, finished = false;
 let bids = [], adminErr = '';
+let itemsUnsub = null, itemsKey = '';
 let unsubs = [], adminUnsub = null, ready = {items:false, round:false}, shown = false, closing = false, autoNo = null;
+let needRoute = false;
 let last = {}, viewKey = '', sel = [], durMin = 2, tab = 'live';
 
 const $ = s => document.querySelector(s);
@@ -264,20 +278,22 @@ const face = it => it.photo ? `<img src="${esc(it.photo)}" alt="">` : it.emoji;
 const norm = p => String(p || '').replace(/\D/g, '');
 const tailOf = it => it.tail || '';
 const leadHtml = it => it.top==null ? '无人参与'
-  : `得标<b>${esc(it.who || '桌 '+it.table)}</b><small class="tl">${[it.who ? '桌 '+it.table : '', tailOf(it) ? '尾号 '+tailOf(it) : ''].filter(Boolean).join(',')}</small>`;
+  : `得主<b>${esc(it.who || '桌 '+it.table)}</b><small class="tl">${[it.who ? '桌 '+it.table : '', tailOf(it) ? '尾号 '+tailOf(it) : ''].filter(Boolean).join(',')}</small>`;
 const leadShort = it => it.top==null ? '无人参与'
-  : `得标 ${[it.who, '桌 '+it.table, tailOf(it) ? '尾号 '+tailOf(it) : ''].filter(Boolean).join(',')}`;
-const key = () => `${round?round.no:0}:${round?round.status:''}:${round?round.resolved:''}:${finished}`;
+  : `得主 ${[it.who, '桌 '+it.table, tailOf(it) ? '尾号 '+tailOf(it) : ''].filter(Boolean).join(',')}`;
+const key = () => `${round?round.no:0}:${round?round.status:''}:${round?round.resolved:''}:${finished}:${round && round.resolved ? roundItems().map(i => i.top + '|' + i.who).join(',') : ''}`;
 const saved = () => { try { return JSON.parse(localStorage.getItem('bidder')) || {}; } catch(e){ return {}; } };
 const save = (table, phone, name) => { try { localStorage.setItem('bidder', JSON.stringify({table, phone, name})); } catch(e){} };
-const epoch = () => (R && R.epoch) || 0;      // 每次"清空演练数据"会换一个新编号,测试时留在手机里的记录就不再算数
+const epoch = () => (R && R.epoch) || 0;
 const subKey = () => epoch() + ':' + (round ? round.no : 0);
+const draftGet = () => { try { const d = JSON.parse(localStorage.getItem('draft')) || {}; return d.k === subKey() ? d : {}; } catch(e){ return {}; } };
+const draftSet = patch => { try { localStorage.setItem('draft', JSON.stringify({...draftGet(), ...patch, k:subKey()})); } catch(e){} };
 const mySubs = () => { try { const m = JSON.parse(localStorage.getItem('mysubs')) || {}; return m.k === subKey() && m.s && !Array.isArray(m.s) ? m.s : {}; } catch(e){ return {}; } };
 const remember = entries => { try { const o = mySubs(); entries.forEach(e => { if (e.amount > 0) o[e.item] = e.amount; else delete o[e.item]; }); localStorage.setItem('mysubs', JSON.stringify({k:subKey(), s:o})); } catch(e){} };
 const total = () => items.reduce((a,i) => a + (isClosed(i) && i.top ? i.top : 0), 0);
 const esc = x => String(x ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-/* ===== 数据库 ===== */
+// Firebase
 const FV = () => firebase.firestore.FieldValue;
 const col = n => db.collection(n);
 const itemRef = id => col('items').doc(id);
@@ -294,20 +310,24 @@ function applyRound(d){
 }
 function startSync(){
   if (unsubs.length) return;
-  unsubs.push(col('items').orderBy('order').onSnapshot(s => { items = s.docs.map(d => ({id:d.id, ...d.data()})); ready.items = true; enrich(); onData(); }, onErr));
-  unsubs.push(roundRef().onSnapshot(s => { applyRound(s.exists ? s.data({serverTimestamps:'estimate'}) : null); ready.round = true; onData(); }, onErr));
+  unsubs.push(roundRef().onSnapshot(s => { applyRound(s.exists ? s.data({serverTimestamps:'estimate'}) : null); ready.round = true; syncItems(); onData(); }, onErr));
 }
-function stopSync(){ unsubs.forEach(u => u()); unsubs = []; }
-function onData(){ if (!(ready.items && ready.round)) return; if (!shown){ shown = true; return route(); } refresh(); }
+
+const wantKey = () => isBid() ? (round && !finished ? 'r' + round.no : 'none') : 'all';
+function syncItems(){
+  const k = wantKey();
+  if (k === itemsKey) return;
+  if (itemsUnsub){ itemsUnsub(); itemsUnsub = null; }
+  itemsKey = k;
+  if (k === 'none'){ items = []; ready.items = true; return; }
+  ready.items = false;
+  const q = k === 'all' ? col('items').orderBy('order') : col('items').where('roundNo', '==', round.no);
+  itemsUnsub = q.onSnapshot(s => { items = s.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => (a.order || 0) - (b.order || 0)); ready.items = true; enrich(); onData(); }, onErr);
+}
+function onData(){ if (!(ready.items && ready.round)) return; if (!shown || needRoute){ shown = true; needRoute = false; return route(); } refresh(); }
 function onErr(e){ $('#app').innerHTML = `<div class="wrap wait"><h1>连不上数据库</h1><p>请检查网络,或确认安全规则已经发布。(${esc(e.code || e.message)})</p></div>`; }
 
-/* ===== 结果怎么算 =====
-   0. 同一个人(按手机号)对同一件作品,或对"随机一件",只认他最后一次提交;金额 0 表示取消。
-   1. 每件作品:指定这一件的金额里,最高的拿到(金额一样,先提交的拿到)。金额要不低于低价。
-   2. 随机金额,按金额从高到低依次处理:
-      在所有"他的金额能胜过目前最高金额"的作品里,拿走目前最高金额最低的那一件。
-      (还没人提交的作品,目前最高金额当作它的低价。)
-      被拿走的作品,原来的领先者就没有这一件了。 */
+
 const better = (a, b) => !b || a.amount > b.amount || (a.amount === b.amount && a.time < b.time);
 const keyOf = b => norm(b.phone) || 'n' + b.table + '|' + (b.who || '');
 function effective(list){
@@ -337,21 +357,21 @@ async function submitBids(entries, table, phone, source, who){
     await b.commit();
     return {ok:true};
   } catch(e){
-    if (e.code === 'permission-denied') return {ok:false, msg:'提交没有成功:这一轮可能已经结束。请看看大屏幕或刷新页面。(' + e.code + ')'};
-    return {ok:false, msg:'网络出了问题,提交没有成功,请再试一次。'};
+    if (e.code === 'permission-denied') return {ok:false, msg:'提交没有成功Submission Fail:这一轮可能已经结束。请看看大屏幕或刷新页面。(' + e.code + ')'};
+    return {ok:false, msg:'Submission Fail:网络出了问题,提交没有成功,请再试一次。'};
   }
 }
 async function publishResults(rno){
   const ids = round && round.no === rno ? round.ids : items.filter(i => i.roundNo === rno).map(i => i.id);
-  await new Promise(r => setTimeout(r, 1500));                       // 等最后一刻的提交都到齐
+  await new Promise(r => setTimeout(r, 1500));
   const snap = await col('bids').where('round', '==', rno).get();
   const list = snap.docs.map(d => { const x = d.data({serverTimestamps:'estimate'}); return {id:d.id, ...x, time: x.createdAt ? x.createdAt.toMillis() : 0}; }).filter(b => !b.void);
   const res = resolveRound(ids, list), b = db.batch();
   ids.forEach(id => { const w = res[id];
     b.update(itemRef(id), w ? {status:'closed', top:w.amount, table:w.table, tail:norm(w.phone).slice(-TAIL), who:w.who||'', lastBid:w.id}
                             : {status:'closed', top:null, table:null, tail:'', who:'', lastBid:null}); });
-  if (round && round.no === rno) b.update(roundRef(), {resolved:true});
   await b.commit();
+  if (round && round.no === rno && !round.resolved) await roundRef().update({resolved:true});
 }
 async function startRound(ids){
   ids = ids.filter(id => get(id) && get(id).status === 'pending').slice(0, MAXROUND);
@@ -363,7 +383,7 @@ async function startRound(ids){
 }
 async function closeRound(){
   if (!round || round.dbStatus !== 'open') return;
-  await roundRef().update({status:'closed'});      // 先关门,之后不再收新的提交
+  await roundRef().update({status:'closed'});
   await publishResults(round.no);
 }
 async function reopenRound(){
@@ -378,7 +398,7 @@ async function setVoid(id, v){
   await col('bids').doc(id).update({void:v});
   const ids = items.filter(i => i.roundNo === x.round);
   const resolved = round && round.no === x.round ? round.resolved : ids.length > 0 && ids.every(i => i.status === 'closed');
-  if (resolved) await publishResults(x.round);      // 已经公布过的,作废后重新计算
+  if (resolved) await publishResults(x.round);
 }
 async function seedDemo(){
   const base = items.reduce((m,i) => Math.max(m, i.order || 0), 0), b = db.batch();
@@ -400,7 +420,7 @@ async function resetAll(){
   const b = db.batch(); items.forEach(it => b.update(itemRef(it.id), BLANK)); b.set(roundRef(), {...IDLE, epoch:Date.now()}); await b.commit(); sel = []; autoNo = null;
 }
 
-/* ===== 大屏页 ===== */
+// Main Scene
 let qrCache = '';
 function qrSvg(){
   if (qrCache) return qrCache;
@@ -411,18 +431,17 @@ function qrSvg(){
 }
 const last_ = it => last[it.id];
 const fl = it => last[it.id] !== undefined && last[it.id] !== it.top;
-const sealOf = it => round && round.resolved && isClosed(it) ? '<span class="seal">结束</span>' : '';
-function stateOf(it){                  // 大屏和手机上每件作品现在该显示什么
-  if (round.status === 'open') return {lab:'低价', val:money(it.min), lead:'', short:'', none:true};
+function stateOf(it){
+  if (round.status === 'open') return {lab:'底价', val:money(it.min), lead:'', short:'', none:true};
   if (!round.resolved) return {lab:'时间到', val:'统计中…', lead:'', short:'', none:true};
-  if (it.top == null) return {lab:'低价', val:money(it.min), lead:'无人参与', short:'无人参与', none:true};
-  return {lab:'最高金额', val:money(it.top), lead:leadHtml(it), short:leadShort(it), none:false};
+  if (it.top == null) return {lab:'底价', val:money(it.min), lead:'无人参与', short:'无人参与', none:true};
+  return {lab:'最高加倍金额', val:money(it.top), lead:leadHtml(it), short:leadShort(it), none:false};
 }
 function single(it){
   const v = stateOf(it);
   return `<main class="stage"><section class="stitch ${fl(it)?'flash':''}">
     <div class="left">
-      <div class="big ph" style="${bg(it)}">${face(it)}${sealOf(it)}</div>
+      <div class="big ph" style="${bg(it)}">${face(it)}</div>
       <div><small>第 ${items.indexOf(it)+1} 件,共 ${items.length} 件</small><h2>${esc(it.name)}</h2>
         <p class="rule">${round.status==='open' ? '想加倍的朋友,请扫码填写您的金额' : ''}</p></div>
     </div>
@@ -440,11 +459,11 @@ function multi(ris){
   const fs = n<=2 ? 'clamp(1rem,1.7vw,2.1rem)' : n<=4 ? 'clamp(.9rem,1.35vw,1.8rem)' : n<=6 ? 'clamp(.85rem,1.15vw,1.5rem)' : 'clamp(.75rem,.95vw,1.3rem)';
   return `<main class="stage"><section class="stitch m">
     <div class="cards" style="--fs:${fs};grid-template-columns:repeat(${cols},minmax(0,1fr));grid-template-rows:repeat(${rows},minmax(0,1fr))">
-      ${ris.map(it => { const v = stateOf(it); return `<article class="mc ${fl(it)?'flash':''}">
-        <div class="mp ph" style="${bg(it)}">${face(it)}${sealOf(it)}</div>
-        <h3>${esc(it.name)}</h3><small>${v.lab}</small>
+      ${ris.map(it => { const v = stateOf(it); return `<article class="mc ${n===4?'h':''} ${fl(it)?'flash':''}">
+        <div class="mp ph" style="${bg(it)}">${face(it)}</div>
+        <div class="tx"><h3>${esc(it.name)}</h3><small>${v.lab}</small>
         <div class="price">${v.val}</div>
-        <div class="lead2 ${v.none?'none':''}">${v.short}</div></article>`; }).join('')}
+        <div class="lead2 ${v.none?'none':''}">${v.short}</div></div></article>`; }).join('')}
     </div>
     <div class="right"><div class="top2"><div class="qr"><div>${qrSvg()}</div>扫码开始加倍</div>
       <div class="cd" id="cdBox"><span id="cdLbl"></span><b id="cd"></b></div></div>
@@ -454,7 +473,7 @@ function viewScreen(){
   document.body.className = 'screen';
   const ris = roundItems();
   let body;
-  if (finished) body = `<section class="msg"><h2>爱加倍全部结束</h2><p>本场爱加倍金额合计 <b style="color:var(--gold)">${money(total())}</b>。感谢大家的参与,得标者请留意工作人员联络。</p>
+  if (finished) body = `<section class="msg"><h2>爱加倍全部结束</h2><p>本场爱加倍金额合计 <b style="color:var(--gold)">${money(total())}</b>。感谢大家的参与,得主请留意工作人员联络。</p>
     <div class="results">${items.map(i => `<div class="res"><b>${esc(i.name)}</b>${i.top==null ? '<small>无人参与</small>' : `<div class="price">${money(i.top)}</div><small>${leadShort(i).replace('得标 ','')}</small>`}</div>`).join('')}</div></section>`;
   else if (!round || !ris.length) body = `<section class="msg"><h2>爱加倍即将开始</h2><p>今晚共 ${items.length} 件木刻作品。</p></section>`;
   else body = ris.length === 1 ? single(ris[0]) : multi(ris);
@@ -464,7 +483,7 @@ function viewScreen(){
   tick();
 }
 
-/* ===== 手机页:每件各自填金额,也可以只填一个"随机"金额 ===== */
+// Phone Scene
 const wrapMsg = (h, p) => { $('#app').innerHTML = `<div class="wrap wait"><h1>${h}</h1><p>${p}</p></div>`; };
 const meWin = it => { const s = saved(); return it.top != null && s.name && it.who === s.name && String(it.table) === String(s.table) && it.tail === norm(s.phone).slice(-TAIL); };
 function viewBid(notice){
@@ -475,26 +494,28 @@ function viewBid(notice){
   round.status === 'open' ? viewForm(notice) : viewResult();
 }
 function viewForm(notice){
-  const s = saved(), known = !!(s.name && s.table && s.phone), ris = roundItems(), subs = mySubs();
+  const s = saved(), known = !!(s.name && s.table && s.phone), ris = roundItems(), subs = mySubs(), dr = draftGet();
   const sent = id => subs[id] ? [subs[id]] : [];
+  const val = id => dr.amt && id in dr.amt ? dr.amt[id] : (subs[id] || '');
+  const idv = (f, k) => known ? (s[k] || '') : (dr[f] ?? s[k] ?? '');
   $('#app').innerHTML = `<div class="wrap">
     <small class="no">第 ${round.no} 轮,共 ${ris.length} 件</small>
-    <h1 class="bt">填写您的爱加倍金额</h1>
-    <p class="sub2">想要哪一件,就在那一件后面填金额;可以填好几件,不想要的留空。时间结束前可以随时修改。</p>
+    <h1 class="bt">填写您的爱加倍金额Enter your amount</h1>
+    <p class="sub2">想要哪一件,就在那一件后面填金额;可以填好几件,不想要的留空。时间结束前可以随时修改。点图片可以放大看。Enter the amount you wish to pledge next to the corresponding item(s). You may pledge for multiple items; leave the fields blank for any items you do not want. You can modify your entries at any time before the deadline.</p>
     ${notice ? `<div class="okb">${notice}</div>` : ''}
     ${known ? `<div class="idsum" id="idsum"><span>你的资料:${esc(s.name)},桌 ${esc(s.table)},${esc(s.phone)}</span><button type="button" id="editid">修改</button></div>` : ''}
     <div id="idf" ${known ? 'style="display:none"' : ''}>
-      <label>姓名<input id="who" maxlength="30" placeholder="你的姓名" value="${esc(s.name||'')}"></label>
-      <label>桌号<input id="tb" inputmode="numeric" maxlength="3" placeholder="例如 5" value="${esc(s.table||'')}"></label>
-      <label>手机号<input id="phone" type="tel" placeholder="结束后用来联络得标者" value="${esc(s.phone||'')}"></label>
+      <label>姓名Name<input id="who" maxlength="30" placeholder="你的姓名N" value="${esc(idv('who','name'))}"></label>
+      <label>桌号Table No.<input id="tb" inputmode="numeric" maxlength="3" placeholder="例如 5" value="${esc(idv('tb','table'))}"></label>
+      <label>手机号Contact<input id="phone" type="tel" placeholder="结束后用来联络得标者" value="${esc(idv('phone','phone'))}"></label>
     </div>
     ${ris.map(it => `<div class="ic">
-      <div class="th ph" style="${bg(it)}">${face(it)}</div>
-      <div class="lm"><b>${esc(it.name)}</b><small>低价 ${money(it.min)}</small>${sent(it.id).length ? `<small class="sent">当前已提交 ${sent(it.id).map(money).join('、')}</small>` : ''}</div>
-      <input class="amt2" data-item="${it.id}" inputmode="numeric" placeholder="金额" value="${subs[it.id]||''}" aria-label="${esc(it.name)}的金额"></div>`).join('')}
+      <div class="th ph" data-act="zoom" data-id="${it.id}" role="button" aria-label="放大看" style="${bg(it)}">${face(it)}</div>
+      <div class="lm"><b>${esc(it.name)}</b><small>底价 ${money(it.min)}</small>${sent(it.id).length ? `<small class="sent">当前已提交 ${sent(it.id).map(money).join('、')}</small>` : ''}</div>
+      <input class="amt2" data-item="${it.id}" inputmode="numeric" placeholder="金额" value="${esc(val(it.id))}" aria-label="${esc(it.name)}的金额"></div>`).join('')}
     ${ris.length > 1 ? `<div class="ic any">
-      <div class="lm"><b>随机一件</b><small>每一件都有兴趣?只填一个金额,系统最多给你其中一件</small>${sent('*').length ? `<small class="sent">当前已提交 ${sent('*').map(money).join('、')}</small>` : ''}</div>
-      <input class="amt2" data-item="*" inputmode="numeric" placeholder="金额" value="${subs['*']||''}" aria-label="随机金额"></div>` : ''}
+      <div class="lm"><b>随机一件Random One</b><small>每一件都有兴趣?只填一个金额,系统最多给你其中一件Interested in multiple items? Just enter a single amount, and the system will secure at most one of them for you.</small>${sent('*').length ? `<small class="sent">当前已提交 ${sent('*').map(money).join('、')}</small>` : ''}</div>
+      <input class="amt2" data-item="*" inputmode="numeric" placeholder="金额Amount" value="${esc(val('*'))}" aria-label="随机金额Amount"></div>` : ''}
     <p class="err" id="err" role="alert"></p>
     <button class="go" id="go">提交</button>
     <p class="note">提交后大屏幕不会变化,时间结束后会一起公布最高金额和得主。得标时,大屏幕会显示你的姓名、桌号和手机尾号 ${TAIL} 位;完整手机号只用于结束后联络。时间结束前可以修改:改好金额再按提交;清空某一件的金额再提交,就是取消这一件。以你最后一次提交为准。</p>
@@ -513,46 +534,46 @@ function submit(){
     const a = parseInt(raw.replace(/[^\d]/g, ''), 10);
     if (!a) return err('请检查金额,只填数字。');
     const need = id === '*' ? Math.min(...ris.map(i => i.min)) : (get(id) || {}).min;
-    if (a < need) return err(`${id === '*' ? '随机金额' : get(id).name + '的金额'}不能低于低价 ${money(need)}。`);
+    if (a < need) return err(`${id === '*' ? '随机金额' : get(id).name + '的金额Amount'}不能低于底价Cannot Less than the original amount ${money(need)}。`);
     if (a !== prev) entries.push({item:id, amount:a, prev});
   }
-  if (!entries.length) return err(Object.keys(subs).length ? '没有需要更新的内容。要修改,请先改金额再提交。' : '请至少填写一个金额。');
-  if (!n){ showId(); return err('请填写姓名。'); }
-  if (!/^\d{1,3}$/.test(t)){ showId(); return err('请填写桌号,只填数字,例如 5。'); }
-  if (norm(p).length < 8){ showId(); return err('手机号格式不对,请检查后再提交。'); }
+  if (!entries.length) return err(Object.keys(subs).length ? '没有需要更新的内容。要修改,请先改金额再提交。' : '请至少填写一个金额。Please Enter At Least One Amount');
+  if (!n){ showId(); return err('请填写姓名。Please Fill In Name'); }
+  if (!/^\d{1,3}$/.test(t)){ showId(); return err('请填写桌号,只填数字,例如 5。Please enter your table number (digits only, e.g., 5).'); }
+  if (norm(p).length < 8){ showId(); return err('手机号格式不对,请检查后再提交。The mobile phone number format is incorrect; please check it and submit again.'); }
   err('');
-  const label = e => e.item === '*' ? '随机一件' : esc(get(e.item).name);
+  const label = e => e.item === '*' ? '随机一件Random One' : esc(get(e.item).name);
   const m = document.createElement('div');
   m.className = 'modal';
   m.innerHTML = `<div class="box" role="dialog" aria-modal="true">
-      <h3>${entries.some(e => e.prev) ? '确认更改' : '确认提交'}</h3><p>${esc(n)},桌 ${esc(t)},手机 ${esc(p)}</p>
+      <h3>${entries.some(e => e.prev) ? '确认更改Confirm' : '确认提交Confirm'}</h3><p>${esc(n)},桌Table No. ${esc(t)},手机Contact Number ${esc(p)}</p>
       <div style="text-align:left;margin:.8rem 0">${entries.map(e => `<p style="color:var(--paper)">${label(e)}:${e.prev ? money(e.prev) + ' → ' : ''}<b>${e.amount > 0 ? money(e.amount) : '取消'}</b></p>`).join('')}</div>
-      <button class="btn" id="ok">确认</button>
-      <button class="btn ghost" id="cancel">返回修改</button></div>`;
+      <button class="btn" id="ok">确认Ok Confirm</button>
+      <button class="btn ghost" id="cancel">返回修改Cancel</button></div>`;
   document.body.appendChild(m);
   $('#cancel').onclick = () => m.remove();
   $('#ok').onclick = async () => {
-    $('#ok').disabled = true; $('#ok').textContent = '提交中…';
+    $('#ok').disabled = true; $('#ok').textContent = '提交中…In Progress';
     const r = await submitBids(entries.map(e => ({item:e.item, amount:e.amount})), t, p, 'guest', n);
     m.remove();
     if (!r.ok) return err(r.msg);
-    save(t, p, n); remember(entries);
-    viewForm('已提交,谢谢!时间结束前还可以修改,或继续填其他作品。');
+    save(t, p, n); remember(entries); draftSet({amt:{}});
+    viewForm('已提交,谢谢!时间结束前还可以修改,或继续填其他作品。Submitted—thank you! You may still make changes or add other entries until the times up');
   };
 }
 function viewResult(){
   const ris = roundItems();
-  if (!round.resolved) return wrapMsg('时间到', '正在统计结果,请看大屏幕。');
+  if (!round.resolved) return wrapMsg('时间到Times Up', '正在统计结果,请看大屏幕。');
   const subs = mySubs(), wins = ris.filter(meWin);
   $('#app').innerHTML = `<div class="wrap">
     <small class="no">第 ${round.no} 轮已结束</small>
     <h1 class="bt">结果</h1>
-    ${Object.keys(subs).length ? `<div class="${wins.length ? 'okb' : 'mine out'}">${wins.length ? '恭喜,你得标了:' + wins.map(i => esc(i.name)).join('、') : '这一轮你没有得标,谢谢参与。'}</div>` : ''}
+    ${Object.keys(subs).length ? `<div class="${wins.length ? 'okb' : 'mine out'}">${wins.length ? 'Congratulation恭喜,你得标了:' + wins.map(i => esc(i.name)).join('、') : '这一轮你没有得标,谢谢参与。'}</div>` : ''}
     ${ris.map(it => `<div class="res2"><b>${esc(it.name)}</b><br><small>${it.top == null ? '无人参与' : '最高金额 ' + money(it.top) + ',' + leadShort(it).replace('得标 ','')}</small></div>`).join('')}
-    <p class="note">请等待下一轮。</p></div>`;
+    <p class="note">Please Wait请等待下一轮。</p></div>`;
 }
 
-/* ===== 管理页 ===== */
+// Admin Page
 const clock = t => { const d = new Date(t); return pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()); };
 const itemName = id => id === '*' ? '随机一件' : (items.find(i => i.id === id) || {}).name || '';
 const stText = it => isClosed(it) ? '已结束' : it.status === 'open' ? '进行中' : '未开始';
@@ -590,11 +611,11 @@ function renderTab(){
         <div class="row2"><label>作品<select id="pi"></select></label>
           <label>姓名<input id="pn"></label>
           <label>桌号<input id="pt" inputmode="numeric"></label>
-          <label>手机号(可不填)<input id="pp" type="tel"></label>
+          <label>手机号<input id="pp" type="tel"></label>
           <label>金额<input id="pa" inputmode="numeric"></label>
           <button class="b" data-act="proxy">录入</button></div>
         <p class="err" id="pErr"></p></div>
-      <div class="panel"><b>最近提交</b><div id="miniLog"></div></div>`;
+      <div class="panel"><b></b><div id="miniLog"></div></div>`;
   } else if (tab === 'log') b.innerHTML = '<div class="panel" id="logBox"></div>';
   else if (tab === 'items') b.innerHTML = itemsHtml();
   else b.innerHTML = '<div class="panel" id="resBox"></div>';
@@ -607,7 +628,7 @@ function adminRefresh(){
     const m = $('#miniLog'); if (m) m.innerHTML = logTable(bids.slice(-8).reverse());
     const pi = $('#pi');
     if (pi){ const v = pi.value, o = round && round.status==='open' ? roundItems() : [];
-      pi.innerHTML = o.map(i => `<option value="${i.id}">${esc(i.name)}</option>`).join('') + (o.length > 1 ? '<option value="*">随机一件</option>' : '');
+      pi.innerHTML = o.map(i => `<option value="${i.id}">${esc(i.name)}</option>`).join('') + (o.length > 1 ? '<option value="*">随机一件Random One</option>' : '');
       if (v && [...pi.options].some(x => x.value === v)) pi.value = v; }
   }
   if (tab === 'log' && $('#logBox')) $('#logBox').innerHTML = logTable(bids.slice().reverse());
@@ -620,7 +641,7 @@ function selHtml(){
   if (!pend.length) return '<p><small>没有待开始的物品了,可以点"结束全场"。</small></p>';
   const n = sel.filter(id => pend.some(p => p.id === id)).length;
   return `<div class="sel"><b>选择下一轮要开放的作品(最多 ${MAXROUND} 件)</b>
-    <div class="chk">${pend.map(i => `<label class="c"><input type="checkbox" data-sel="${i.id}" ${sel.includes(i.id)?'checked':''}>${esc(i.name)}<small>&nbsp;低价 ${money(i.min)}</small></label>`).join('')}</div>
+    <div class="chk">${pend.map(i => `<label class="c"><input type="checkbox" data-sel="${i.id}" ${sel.includes(i.id)?'checked':''}>${esc(i.name)}<small>&nbsp;底价 ${money(i.min)}</small></label>`).join('')}</div>
     <div class="btns"><button class="b" data-act="startRound" ${n && n<=MAXROUND ? '' : 'disabled'}>开始本轮(已选 ${n} 件)</button>
       <button class="b line" data-act="selAll">全选</button><button class="b line" data-act="selNone">清空</button></div>
     ${n > MAXROUND ? '<p class="err">一轮最多 '+MAXROUND+' 件,请取消几件。</p>' : ''}</div>`;
@@ -630,7 +651,7 @@ function liveRows(){
   const prov = round.resolved ? null : resolveRound(round.ids, mine), eff = effective(mine);
   return round.ids.map(get).filter(Boolean).map(it => {
     const w = round.resolved ? (it.top == null ? null : {amount:it.top, who:it.who, table:it.table}) : prov[it.id];
-    return `<tr><td>${esc(it.name)}</td><td>低价 ${money(it.min)}</td><td>${eff.filter(b => b.item === it.id).length} 人</td><td>${w ? money(w.amount) + ',' + esc(w.who||'') + ',桌 ' + w.table : '无'}</td></tr>`;
+    return `<tr><td>${esc(it.name)}</td><td>底价 ${money(it.min)}</td><td>${eff.filter(b => b.item === it.id).length} 人</td><td>${w ? money(w.amount) + ',' + esc(w.who||'') + ',桌 ' + w.table : '无'}</td></tr>`;
   }).join('') + `<tr><td colspan="4"><small>随机金额 ${eff.filter(b => b.item === '*').length} 人。同一个人只算最后一次提交。${round.resolved ? '以上是已经公布的结果。' : '最后一列是暂列的结果,只有管理页看得到,大屏和手机都看不到。'}</small></td></tr>`;
 }
 function renderLive(){
@@ -641,7 +662,7 @@ function renderLive(){
   else {
     h = round
       ? `<div class="st"><b class="nm">第 ${round.no} 轮,共 ${round.ids.length} 件,${open?'进行中':round.resolved?'已结束,结果已公布':'时间到,统计中'}</b><div class="bignum" id="admCd"></div></div>
-         <table class="t"><thead><tr><th>作品</th><th>低价</th><th>提交数</th><th>${round.resolved?'最高金额和得主':'暂列最高(仅管理页可见)'}</th></tr></thead><tbody>${liveRows()}</tbody></table>`
+         <table class="t"><thead><tr><th>作品</th><th>底价</th><th>提交数</th><th>${round.resolved?'最高金额和得主':'暂列最高(仅管理页可见)'}</th></tr></thead><tbody>${liveRows()}</tbody></table>`
       : '<b>爱加倍尚未开始</b>';
     if (open) btn = '<button class="b line" data-act="ext" data-s="30">+30 秒</button><button class="b line" data-act="ext" data-s="60">+1 分钟</button><button class="b red" data-act="end">结束并公布结果</button>';
     else {
@@ -655,7 +676,7 @@ const logTable = list => !list.length ? '<small>还没有记录。</small>' :
   `<table class="t"><thead><tr><th>时间</th><th>作品</th><th>姓名</th><th>桌号</th><th>金额</th><th>手机号</th><th>来源</th><th></th></tr></thead><tbody>${list.map(b =>
   `<tr class="${b.void?'void':''}"><td>${clock(b.time)}</td><td>${esc(itemName(b.item))}</td><td>${esc(b.who||'')}</td><td>${b.table}</td><td>${b.amount > 0 ? money(b.amount) : '取消'}</td><td>${esc(b.phone)}</td><td>${b.source==='staff'?'工作人员':'宾客'}</td><td><button class="b line" data-act="void" data-id="${b.id}">${b.void?'恢复':'作废'}</button></td></tr>`).join('')}</tbody></table>`;
 function itemsHtml(){
-  return `<div class="panel"><table class="t"><thead><tr><th>#</th><th>名称</th><th>低价</th><th>照片路径</th><th>状态</th><th></th></tr></thead><tbody>
+  return `<div class="panel"><table class="t"><thead><tr><th>#</th><th>名称</th><th>底价</th><th>照片路径</th><th>状态</th><th></th></tr></thead><tbody>
   ${items.map((it,i) => { const p = it.status === 'pending', d = p ? '' : 'disabled'; return `<tr><td>${i+1}</td>
     <td><input data-f="name" data-i="${i}" value="${esc(it.name)}" ${d}></td>
     <td><input class="num" data-f="min" data-i="${i}" inputmode="numeric" value="${it.min}" ${d}></td>
@@ -691,8 +712,17 @@ function download(rows, name){
   const blob = new Blob(['\ufeff' + rows.map(r => r.map(q).join(',')).join('\n')], {type:'text/csv;charset=utf-8'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
 }
-const txt = v => v ? '\t' + v : '';       // 手机号前加制表符,Excel 不会吃掉开头的 0
+const txt = v => v ? '\t' + v : '';
+function openZoom(id){
+  const it = get(id); if (!it) return;
+  const m = document.createElement('div');
+  m.className = 'lb';
+  m.innerHTML = `<button class="lbx" aria-label="关闭">×</button><div class="lbp ph" style="${bg(it)}">${face(it)}</div><p>${esc(it.name)}</p><small>底价 ${money(it.min)}</small>`;
+  m.onclick = () => m.remove();
+  document.body.appendChild(m);
+}
 async function act(a, d){
+  if (a === 'zoom') return openZoom(d.id);
   const open = round && round.status === 'open';
   try {
     if (a === 'logout') return auth.signOut();
@@ -735,6 +765,11 @@ async function act(a, d){
   if (isAdmin() && tab === 'items') renderTab();
 }
 $('#app').addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b && !b.disabled) act(b.dataset.act, b.dataset); });
+$('#app').addEventListener('input', e => {
+  const t = e.target;
+  if (t.classList.contains('amt2')) draftSet({amt:{...(draftGet().amt || {}), [t.dataset.item]:t.value}});
+  else if (['who','tb','phone'].includes(t.id)) draftSet({[t.id]:t.value});
+});
 $('#app').addEventListener('change', e => {
   const t = e.target;
   if (t.id === 'dur') durMin = Math.max(0, parseFloat(t.value) || 0);
@@ -746,18 +781,17 @@ $('#app').addEventListener('change', e => {
   }
 });
 
-/* ===== 路由、计时 ===== */
 const view = () => (location.hash || '#/screen').split('/')[1];
 const isBid = () => view() === 'bid', isAdmin = () => view() === 'admin';
 function route(){
-  if (isAdmin()){ if (!unsubs.length) startSync(); return viewAdmin(); }
-  if (isBid() && document.hidden) return;
   if (!unsubs.length) startSync();
-  isBid() ? viewBid() : viewScreen();
+  syncItems();
+  if (!(ready.items && ready.round)){ needRoute = true; return; }
+  isAdmin() ? viewAdmin() : isBid() ? viewBid() : viewScreen();
 }
 function refresh(){
   if (isAdmin()) return user ? adminRefresh() : undefined;
-  if (isBid()) return key() !== viewKey ? viewBid() : undefined;   // 开放期间数据不会变,不用重画,以免打断填写
+  if (isBid()) return key() !== viewKey ? viewBid() : undefined;
   viewScreen();
 }
 function cdInfo(){
@@ -769,7 +803,7 @@ function cdInfo(){
 }
 function tick(){
   if (round && round.status === 'open' && round.endAt && Date.now() >= round.endAt){ round.status = 'closed'; refresh(); }
-  if (user && round && !closing && autoNo !== round.no && round.status === 'closed' && !round.resolved){   // 管理页开着时,时间一到自动公布结果
+  if (user && round && !closing && autoNo !== round.no && round.status === 'closed' && !round.resolved){
     autoNo = round.no; closing = true;
     (round.dbStatus === 'open' ? closeRound() : publishResults(round.no))
       .catch(() => alert('自动公布结果没有成功,请到现场控制点"公布结果"。'))
@@ -781,7 +815,7 @@ function tick(){
   const a = $('#admCd'); if (a){ a.textContent = t; a.classList.toggle('end', urgent); }
 }
 
-/* ===== 启动 ===== */
+// Main
 if (!configured){
   $('#app').innerHTML = '<div class="wrap wait"><h1>还没有填写 Firebase 设置</h1><p>请在 config.js 里填入 firebaseConfig。</p></div>';
 } else if (typeof firebase === 'undefined'){
@@ -790,7 +824,7 @@ if (!configured){
   $('#app').innerHTML = '<div class="wrap wait"><h1>连接中…</h1></div>';
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
-  db.settings({experimentalAutoDetectLongPolling:true});   // 场地网络不好时自动换连接方式
+  db.settings({experimentalAutoDetectLongPolling:true});
   auth = firebase.auth();
   auth.onAuthStateChanged(u => {
     user = u; adminErr = ''; bids = [];
@@ -801,11 +835,7 @@ if (!configured){
     }, e => { adminErr = e.code || 'error'; if (shown && isAdmin()) viewAdmin(); });
     if (shown && isAdmin()) viewAdmin();
   });
-  window.addEventListener('hashchange', () => { if (shown) route(); else if (isAdmin()) { startSync(); } });
-  document.addEventListener('visibilitychange', () => {   // 手机息屏时暂停连接,节省免费额度
-    if (isAdmin() || !isBid()) return;
-    document.hidden ? stopSync() : (ready = {items:false, round:false}, shown = false, startSync());
-  });
+  window.addEventListener('hashchange', () => { if (shown) route(); });
   startSync();
   setInterval(tick, 1000);
 }
